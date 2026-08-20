@@ -276,13 +276,34 @@ def _chip(sev: str) -> str:
 
 
 def _signal_card(f: dict) -> str:
+    agent = f.get("agent", "")
     tags = f.get("tags", [])
-    rule = next((t for t in reversed(tags) if t not in ("a11y", "wcag", "perf", "core-web-vitals")), "")
     sev = f.get("severity", "info")
-    title, why, fix = RULE_NOTES.get(
-        rule,
-        (f.get("title", ""), "", ""),
-    )
+
+    if agent == "visual_qa":
+        bp = next((t for t in tags if t in ("mobile", "tablet", "desktop")), "")
+        return f"""
+    <div class="card {sev}">
+      <div class="card-head">{_chip(sev)}<span class="card-title">{f.get('title', '')}</span></div>
+      <div class="field"><span class="k">Detail</span><div>{f.get('detail', '')}</div></div>
+      <div class="field"><span class="k">Source</span><div>Flagged by the vision-model judge on the full-page
+      {bp} screenshot. Visual observations like these are worth a quick manual look before filing.</div></div>
+    </div>"""
+
+    if agent == "geo_aeo" and "dynamic" in tags:
+        engine = next((t for t in tags if t in ("gemini", "claude", "perplexity")), "the engine")
+        return f"""
+    <div class="card {sev}">
+      <div class="card-head">{_chip(sev)}<span class="card-title">AI answer engine inconsistent with your page &mdash; {engine}</span></div>
+      <div class="field"><span class="k">Detail</span><div>{(f.get('detail', '') or '').replace(chr(10), '<br>')}</div></div>
+      <div class="field"><span class="k">How to read this</span><div>A live buyer question was posed to {engine}
+      and its answer was diffed against this page's own content. A mismatch means the page does not substantiate
+      the claim &mdash; either the page is underselling the product (add the content) or the engine is wrong
+      (publish clearer structured data so engines get it right).</div></div>
+    </div>"""
+
+    rule = next((t for t in reversed(tags) if t not in ("a11y", "wcag", "perf", "core-web-vitals")), "")
+    title, why, fix = RULE_NOTES.get(rule, (f.get("title", ""), "", ""))
     n = _affects(f.get("detail", ""))
     affects = f"<div class='field'><span class='k'>Scope</span><div>{n} element(s) on the tested page</div></div>" \
         if rule in RULE_NOTES else ""
@@ -351,6 +372,14 @@ def build_html(buckets: dict, out_stem: str) -> str:
         takeaways.append(
             "<li><strong>Rendering is healthy.</strong> Visual layout passed the vision-model rubric at "
             "mobile, tablet and desktop widths.</li>")
+    geo_issues = [f for f in buckets["signal"] if f.get("agent") == "geo_aeo"]
+    if geo_issues:
+        engines = sorted({t for f in geo_issues for t in f.get("tags", []) if t in ("gemini", "claude", "perplexity")})
+        takeaways.append(
+            "<li><strong>AI answer engines describe your product in ways your own page doesn't back up.</strong> "
+            f"{len(geo_issues)} mismatch(es) found when asking {'/'.join(engines)} buyer questions and diffing "
+            "against the page content — see the GEO/AEO findings below. Worth noting which claim is right: "
+            "the engine's or the page's.</li>")
     geo_pass = next((f for f in buckets["passes"] if f.get("agent") == "geo_aeo"), None)
     if geo_pass:
         d = geo_pass.get("detail", "")
