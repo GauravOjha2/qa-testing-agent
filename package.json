@@ -1,0 +1,9 @@
+{
+  "name": "xoxoday-qa-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agentic QA system for xoxoday.com - visual, forms, GEO/AEO, a11y/perf/silent-failures",
+  "dependencies": {
+    "axe-core": "^4.10.0"
+  }
+}
