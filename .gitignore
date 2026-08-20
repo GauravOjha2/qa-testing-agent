@@ -8,8 +8,9 @@ __pycache__/
 # Node
 node_modules/
 
-# Generated reports (rebuild with scripts/generate_report.py)
+# Generated reports - scratch builds ignored, final deliverable committed
 *.pdf
+!Xoxoday-QA-Report.pdf
 report.html
 Xoxoday-QA-Report.html
 
