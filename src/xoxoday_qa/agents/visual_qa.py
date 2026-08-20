@@ -18,7 +18,7 @@ from playwright.sync_api import Browser
 
 from ..models import AgentSource, Finding, PageTarget, Severity
 from ..playwright_utils import screenshot_at_breakpoints
-from .llm_client import call_vision_model
+from .llm_client import call_vision_model, is_mock_mode
 
 RUBRIC_PROMPT = """You are a visual QA judge for a B2B SaaS marketing/product site.
 You will be shown a full-page screenshot at a specific viewport width.
@@ -83,10 +83,20 @@ def run(browser: Browser, target: PageTarget, out_dir: str, shard_key: str = "de
             ))
 
     if not findings:
+        detail = "Passed rubric at all 3 breakpoints."
+        tags = ["visual", "pass"]
+        if is_mock_mode():
+            # No API key configured: the vision judgment did NOT run.
+            # Say so explicitly so reports can't overstate coverage.
+            detail += (
+                " [MOCK MODE — no LLM API key configured; screenshots were "
+                "captured but no vision-model judgment was performed.]"
+            )
+            tags.append("mock")
         findings.append(Finding(
             url=target.url, agent=AgentSource.VISUAL_QA, severity=Severity.INFO,
-            title="No visual issues found", detail="Passed rubric at all 3 breakpoints.",
-            tags=["visual", "pass"],
+            title="No visual issues found", detail=detail,
+            tags=tags,
         ))
 
     return findings

@@ -24,6 +24,12 @@ def _has_any_llm_key() -> bool:
     return bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("ANTHROPIC_API_KEY"))
 
 
+def is_mock_mode() -> bool:
+    """True when no LLM API key is configured: vision/text calls return
+    clearly-labeled mocks instead of real judgments."""
+    return not _has_any_llm_key()
+
+
 def call_vision_model(prompt: str, image_b64: str, context: str = "") -> str:
     if not _has_any_llm_key():
         return _MOCK_VISION_RESPONSE

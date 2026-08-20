@@ -22,8 +22,10 @@ _LOCALE_PATH_RE = re.compile(r"^/([a-z]{2}(-[a-z]{2})?)/", re.IGNORECASE)
 
 _TYPE_HINTS: list[tuple[re.Pattern, PageType]] = [
     (re.compile(r"^/$"), PageType.HOMEPAGE),
-    (re.compile(r"/(pricing|roi-calculator|calculator)"), PageType.PRICING_ROI),
-    (re.compile(r"/(empuls|plum|compass)(/|$)"), PageType.PRODUCT),
+    # [/-] boundary so hyphenated slugs like /plum-pricing/ classify as
+    # pricing rather than falling through to OTHER.
+    (re.compile(r"[/-](pricing|roi-calculator|calculator)"), PageType.PRICING_ROI),
+    (re.compile(r"/(empuls|plum|compass)([/\-_]|$)"), PageType.PRODUCT),
     (re.compile(r"/(industries|solutions)/"), PageType.INDUSTRY_LANDING),
     (re.compile(r"/blog/"), PageType.BLOG),
     (re.compile(r"/(request-demo|talk-to-sales|book-a-demo|contact)"), PageType.DEMO_FORM),

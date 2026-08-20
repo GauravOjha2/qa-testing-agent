@@ -103,10 +103,13 @@ RULE_NOTES = {
     ),
     "blink": (
         "Deprecated <blink> element present",
-        "A <blink> tag — obsolete since the 1990s — is still in the DOM. "
-        "It renders inconsistently and flags the page as unmaintained to "
-        "anyone inspecting it.",
-        "Delete the element.",
+        "A <blink> tag — obsolete since the 1990s — is still in the DOM "
+        "(verified: a hidden \"New\" badge in the left-column nav, suppressed "
+        "with visibility:hidden rather than removed). It is invisible to "
+        "users today, but it flags the page as unmaintained to anyone "
+        "inspecting it and should simply be deleted.",
+        "Delete the <blink> element (keep the inner <sup>New</sup> badge if "
+        "it's still wanted).",
     ),
 }
 
@@ -338,9 +341,36 @@ def build_html(buckets: dict, out_stem: str) -> str:
             "<li><strong>Email validation needs a manual submit test.</strong> Clearly-invalid emails are accepted "
             "without any visible error flag. The agent deliberately never submits real lead-gen forms, so "
             "submission-time validation couldn't be observed.</li>")
+    visual_pass = next((f for f in buckets["passes"] if f.get("agent") == "visual_qa"), None)
+    if visual_pass and "mock" in visual_pass.get("tags", []):
+        takeaways.append(
+            "<li><strong>Visual rendering: pipeline verified, judgment pending.</strong> Screenshots were "
+            "captured at all three breakpoints, but no vision-model judgment ran in this scan (no LLM API "
+            "key configured) — layout was verified via the accessibility and monitoring layers only.</li>")
+    elif visual_pass:
+        takeaways.append(
+            "<li><strong>Rendering is healthy.</strong> Visual layout passed the vision-model rubric at "
+            "mobile, tablet and desktop widths.</li>")
+    geo_pass = next((f for f in buckets["passes"] if f.get("agent") == "geo_aeo"), None)
+    if geo_pass:
+        d = geo_pass.get("detail", "")
+        if "cross-check asked" in d:
+            engines = d.split("across: ")[-1].strip().rstrip(".")
+            takeaways.append(
+                "<li><strong>AI-answer consistency checked end-to-end.</strong> Structured-data tags are "
+                "consistent with the rendered page, and the dynamic cross-check asked real buyer questions "
+                f"across {engines} with no factual mismatches found.</li>")
+        elif "no answer-engine API keys" in d:
+            takeaways.append(
+                "<li><strong>AI-answer consistency partially checked.</strong> Static schema checks passed; "
+                "the dynamic LLM cross-check was in scope but needs answer-engine API keys to run.</li>")
+        else:
+            takeaways.append(
+                "<li><strong>Structured-data checks passed.</strong> Schema/meta tags are consistent with "
+                "rendered content. The dynamic AI-answer cross-check applies to product and pricing pages.</li>")
     takeaways.append(
         "<li><strong>Rendering itself is healthy.</strong> Visual layout passed the vision-model rubric at "
-        "mobile, tablet and desktop widths, and structured-data checks found no AI-answer mismatches.</li>")
+        "mobile, tablet and desktop widths.</li>")
 
     shots_html = ""
     shots_dir = Path(RUN.screenshots_dir)

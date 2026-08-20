@@ -1,12 +1,12 @@
 {
   "url": "https://signup.xoxoday.in/plum-pricing/",
-  "tested_at": 1787267475.032994,
+  "tested_at": 1787269275.380004,
   "error": null,
   "console_errors": [],
   "network_failures": [],
   "findings": [
     {
-      "id": "a0b0d228",
+      "id": "c08ebcee",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "visual_qa",
       "severity": "info",
@@ -18,11 +18,11 @@
         "visual",
         "pass"
       ],
-      "created_at": 1787267505.9523063,
+      "created_at": 1787269297.9588964,
       "raw": {}
     },
     {
-      "id": "c1378881",
+      "id": "00619e36",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "forms",
       "severity": "medium",
@@ -35,11 +35,11 @@
         "validation",
         "a11y-adjacent"
       ],
-      "created_at": 1787267515.7591448,
+      "created_at": 1787269305.6341827,
       "raw": {}
     },
     {
-      "id": "8fc9dc8f",
+      "id": "cc5f5b20",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "forms",
       "severity": "info",
@@ -52,27 +52,27 @@
         "safety",
         "no-submit"
       ],
-      "created_at": 1787267515.7591558,
+      "created_at": 1787269305.6341941,
       "raw": {}
     },
     {
-      "id": "bc890e41",
+      "id": "ccf5629d",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "geo_aeo",
       "severity": "info",
       "title": "No GEO/AEO issues found",
-      "detail": "",
+      "detail": "Static schema/meta-tag checks passed. Dynamic LLM cross-check was in scope for this page type but no answer-engine API keys were configured.",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "geo_aeo",
         "pass"
       ],
-      "created_at": 1787267523.2457285,
+      "created_at": 1787269312.9763412,
       "raw": {}
     },
     {
-      "id": "2b34762f",
+      "id": "c41b853b",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "high",
@@ -85,7 +85,7 @@
         "wcag",
         "blink"
       ],
-      "created_at": 1787267531.7770452,
+      "created_at": 1787269321.08847,
       "raw": {
         "nodes": [
           [
@@ -95,7 +95,7 @@
       }
     },
     {
-      "id": "eb94df78",
+      "id": "f7da3da6",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "high",
@@ -108,7 +108,7 @@
         "wcag",
         "color-contrast"
       ],
-      "created_at": 1787267531.7770634,
+      "created_at": 1787269321.0884845,
       "raw": {
         "nodes": [
           [
@@ -130,7 +130,7 @@
       }
     },
     {
-      "id": "95071d8a",
+      "id": "b2fe8dd2",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "critical",
@@ -143,7 +143,7 @@
         "wcag",
         "image-alt"
       ],
-      "created_at": 1787267531.777074,
+      "created_at": 1787269321.0884936,
       "raw": {
         "nodes": [
           [
@@ -162,7 +162,7 @@
       }
     },
     {
-      "id": "5908ed46",
+      "id": "13303657",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "high",
@@ -175,7 +175,7 @@
         "wcag",
         "link-in-text-block"
       ],
-      "created_at": 1787267531.7770875,
+      "created_at": 1787269321.0884993,
       "raw": {
         "nodes": [
           [
@@ -185,7 +185,7 @@
       }
     },
     {
-      "id": "13825bc6",
+      "id": "5e0f5447",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "high",
@@ -198,7 +198,7 @@
         "wcag",
         "link-name"
       ],
-      "created_at": 1787267531.777504,
+      "created_at": 1787269321.0885046,
       "raw": {
         "nodes": [
           [
@@ -208,7 +208,7 @@
       }
     },
     {
-      "id": "6bcf4423",
+      "id": "50f680af",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "critical",
@@ -221,7 +221,7 @@
         "wcag",
         "meta-viewport"
       ],
-      "created_at": 1787267531.7775183,
+      "created_at": 1787269321.0885103,
       "raw": {
         "nodes": [
           [
@@ -231,7 +231,7 @@
       }
     },
     {
-      "id": "f49c2aeb",
+      "id": "905e2b43",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "high",
@@ -244,7 +244,7 @@
         "wcag",
         "object-alt"
       ],
-      "created_at": 1787267531.7775283,
+      "created_at": 1787269321.0885177,
       "raw": {
         "nodes": [
           [
@@ -266,7 +266,7 @@
       }
     },
     {
-      "id": "c3b5ed30",
+      "id": "80705202",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -278,11 +278,11 @@
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.777542,
+      "created_at": 1787269321.088534,
       "raw": {}
     },
     {
-      "id": "205a897d",
+      "id": "e1ee3547",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -294,11 +294,11 @@
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7775514,
+      "created_at": 1787269321.088539,
       "raw": {}
     },
     {
-      "id": "8dc80864",
+      "id": "a9d2a839",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -310,11 +310,11 @@
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7775588,
+      "created_at": 1787269321.0885425,
       "raw": {}
     },
     {
-      "id": "3ea892f4",
+      "id": "1da844ab",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -326,75 +326,75 @@
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.777566,
+      "created_at": 1787269321.0885458,
       "raw": {}
     },
     {
-      "id": "c9476f53",
+      "id": "e58fbd03",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://www.google.com/ccm/collect?rcb=6&frm=0&apvc=1&ae=g&auid=250804083.1787267525&dt=Pricing%20%7C%20Xoxoday%20Plum&en=page_view&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&scrsrc=www.googletagmanager.com&rnd=292836461.1787267525&navt=n&npa=0&ep.ads_data_redaction=0&gtm=45He68j0v848889637za200zd848889637xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~120315470~120385422~120495808&tft=1787267524616&tfd=1199&fmt=8' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
+      "detail": "Refused to connect to 'https://www.google.com/ccm/collect?rcb=0&frm=0&apvc=1&ae=g&auid=1865411109.1787269314&dt=Pricing%20%7C%20Xoxoday%20Plum&en=page_view&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&scrsrc=www.googletagmanager.com&rnd=112244442.1787269314&navt=n&npa=0&ep.ads_data_redaction=0&gtm=45He68j1h2v848889637za200zd848889637xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=115616985~115938465~115938468~117227715~118897920~118897930~120315471~120385422&tft=1787269313976&tfd=903&fmt=8' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7775717,
+      "created_at": 1787269321.088549,
       "raw": {}
     },
     {
-      "id": "5abeb59b",
+      "id": "ff89baea",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://www.google.com/ccm/collect?rcb=6&frm=0&apvc=1&ae=g&auid=250804083.1787267525&dt=Pricing%20%7C%20Xoxoday%20Plum&en=page_view&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&scrsrc=www.googletagmanager.com&rnd=292836461.1787267525&navt=n&npa=0&ep.ads_data_redaction=0&gtm=45He68j0v848889637za200zd848889637xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~120315470~120385422~120495808&tft=1787267524616&tfd=1199&fmt=8' because it violates the document's Content Security Policy.",
+      "detail": "Refused to connect to 'https://www.google.com/ccm/collect?rcb=0&frm=0&apvc=1&ae=g&auid=1865411109.1787269314&dt=Pricing%20%7C%20Xoxoday%20Plum&en=page_view&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&scrsrc=www.googletagmanager.com&rnd=112244442.1787269314&navt=n&npa=0&ep.ads_data_redaction=0&gtm=45He68j1h2v848889637za200zd848889637xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=115616985~115938465~115938468~117227715~118897920~118897930~120315471~120385422&tft=1787269313976&tfd=903&fmt=8' because it violates the document's Content Security Policy.",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7775774,
+      "created_at": 1787269321.0885537,
       "raw": {}
     },
     {
-      "id": "700bca8c",
+      "id": "2fe67aa9",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://ad.doubleclick.net/ccm/s/collect?auid=250804083.1787267525&gtm=45He68j0v848889637za200zd848889637xea&fmt=8' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
+      "detail": "Refused to connect to 'https://ad.doubleclick.net/ccm/s/collect?auid=1865411109.1787269314&gtm=45He68j1h2v848889637za200zd848889637xea&fmt=8' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7775831,
+      "created_at": 1787269321.0885575,
       "raw": {}
     },
     {
-      "id": "6ea255e0",
+      "id": "f42d1827",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://ad.doubleclick.net/ccm/s/collect?auid=250804083.1787267525&gtm=45He68j0v848889637za200zd848889637xea&fmt=8' because it violates the document's Content Security Policy.",
+      "detail": "Refused to connect to 'https://ad.doubleclick.net/ccm/s/collect?auid=1865411109.1787269314&gtm=45He68j1h2v848889637za200zd848889637xea&fmt=8' because it violates the document's Content Security Policy.",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.777589,
+      "created_at": 1787269321.088561,
       "raw": {}
     },
     {
-      "id": "9dd19f3a",
+      "id": "383df84b",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -406,11 +406,11 @@
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7775943,
+      "created_at": 1787269321.0885646,
       "raw": {}
     },
     {
-      "id": "cbe6bfa9",
+      "id": "c57d00fb",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -422,27 +422,27 @@
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.777601,
+      "created_at": 1787269321.0885687,
       "raw": {}
     },
     {
-      "id": "255101ba",
+      "id": "f6d4b608",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://px.ads.linkedin.com/attribution_trigger?pid=655099&time=1787267524690&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
+      "detail": "Refused to connect to 'https://px.ads.linkedin.com/attribution_trigger?pid=655099&time=1787269314038&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7776065,
+      "created_at": 1787269321.0885723,
       "raw": {}
     },
     {
-      "id": "6b7adf0f",
+      "id": "92355b74",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -454,139 +454,139 @@
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7776115,
+      "created_at": 1787269321.0885758,
       "raw": {}
     },
     {
-      "id": "8f3c37aa",
+      "id": "0ede3783",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://www.google.com/rmkt/collect/867479590/?random=1787267524915&cv=11&fst=1787267524915&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=3&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=250804083.1787267525&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=68&gcp=5' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
+      "detail": "Refused to connect to 'https://analytics.google.com/g/collect?v=2&tid=G-XS952ZXZ9D&gtm=45je68j1h2v872134731z8848889637za20gzb848889637zd848889637&_p=1787269313161&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAGAC&are=1&cid=82664148.1787269314&frm=0&pscdl=noapi&rcb=10&sr=1440x900&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=&uaw=0&ul=en-gb&gaf=2&_s=1&tag_exp=115938465~115938468~118012007~118897920~118897930~119367802~119367810~120213116~120315471~120385423&sid=1787269314&sct=1&seg=0&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&dt=Pricing%20%7C%20Xoxoday%20Plum&en=page_view&_fv=1&_ss=1&tfd=1207' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.777617,
+      "created_at": 1787269321.0885797,
       "raw": {}
     },
     {
-      "id": "17211299",
+      "id": "0e9ca8d9",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://www.google.com/rmkt/collect/867479590/?random=1787267524915&cv=11&fst=1787267524915&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=3&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=250804083.1787267525&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=68&gcp=5' because it violates the document's Content Security Policy.",
+      "detail": "Refused to connect to 'https://analytics.google.com/g/collect?v=2&tid=G-XS952ZXZ9D&gtm=45je68j1h2v872134731z8848889637za20gzb848889637zd848889637&_p=1787269313161&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAGAC&are=1&cid=82664148.1787269314&frm=0&pscdl=noapi&rcb=10&sr=1440x900&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=&uaw=0&ul=en-gb&gaf=2&_s=1&tag_exp=115938465~115938468~118012007~118897920~118897930~119367802~119367810~120213116~120315471~120385423&sid=1787269314&sct=1&seg=0&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&dt=Pricing%20%7C%20Xoxoday%20Plum&en=page_view&_fv=1&_ss=1&tfd=1207' because it violates the document's Content Security Policy.",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7776225,
+      "created_at": 1787269321.0885835,
       "raw": {}
     },
     {
-      "id": "b261a0ba",
+      "id": "ce818579",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://www.google.com/rmkt/collect/314851277/?random=1787267524983&cv=11&fst=1787267524983&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=3&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=250804083.1787267525&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=68&gcp=5' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
+      "detail": "Refused to load the image 'https://www.google.co.in/ads/ga-audiences?v=1&t=sr&slf_rd=1&_r=4&tid=G-XS952ZXZ9D&cid=82664148.1787269314&gtm=45je68j1h2v872134731z8848889637za20gzb848889637zd848889637&rcb=10&aip=1&dma=0&gcd=13l3l3l3l1l1&npa=0&frm=0&tag_exp=115938465~115938468~118012007~118897920~118897930~119367802~119367810~120213116~120315471~120385423&z=93990507' because it violates the following Content Security Policy directive: \"img-src 'self' data: blob: https://www.google.com.sg https://www.google.com https://ct.capterra.com https://grow.clearbitjs.com *.facebook.com https://googleads.g.doubleclick.net  https://px.ads.linkedin.com *.linkedin.com https://*.licdn.com https://*.amazonaws.com https://*.s3.amazonaws.com https://*.s3.ap-southeast-1.amazonaws.com https://cdnjs.cloudflare.com  https://usage.trackjs.com https://res.cloudinary.com https://data.pendo.io https://*.storage.googleapis.com https://cdn.jsdelivr.net  https://www.google-analytics.com https://www.googletagmanager.com https://via.placeholder.com https://www.youtube.com\".\n",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7776277,
+      "created_at": 1787269321.088587,
       "raw": {}
     },
     {
-      "id": "a85cd2ba",
+      "id": "abdaa0e9",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://www.google.com/rmkt/collect/314851277/?random=1787267524983&cv=11&fst=1787267524983&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=3&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=250804083.1787267525&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=68&gcp=5' because it violates the document's Content Security Policy.",
+      "detail": "Refused to connect to 'https://www.google.com/g/collect?v=2&tid=G-XS952ZXZ9D&gtm=45je68j1h2v872134731z8848889637za20gzb848889637zd848889637&_p=1787269313161&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAGAC&are=1&cid=82664148.1787269314&frm=0&pscdl=noapi&rcb=10&sr=1440x900&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=&uaw=0&ul=en-gb&gaf=3&_s=1&tag_exp=115938465~115938468~118012007~118897920~118897930~119367802~119367810~120213116~120315471~120385423&sid=1787269314&sct=1&seg=0&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&dt=Pricing%20%7C%20Xoxoday%20Plum&en=page_view&_fv=1&_ss=1&tfd=1207' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7776332,
+      "created_at": 1787269321.0885906,
       "raw": {}
     },
     {
-      "id": "4c12be90",
+      "id": "dbe9b278",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://www.google.com/ccm/collect?rcb=3&frm=0&apvc=0&auid=250804083.1787267525&dt=Pricing%20%7C%20Xoxoday%20Plum&tid=AW-867479590&en=page_view&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&scrsrc=www.googletagmanager.com&rnd=292836461.1787267525&navt=n&npa=0&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&tft=1787267524996&tfd=1580&tids=AW-867479590~AW-314851277&fmt=8' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
+      "detail": "Refused to connect to 'https://www.google.com/g/collect?v=2&tid=G-XS952ZXZ9D&gtm=45je68j1h2v872134731z8848889637za20gzb848889637zd848889637&_p=1787269313161&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAGAC&are=1&cid=82664148.1787269314&frm=0&pscdl=noapi&rcb=10&sr=1440x900&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=&uaw=0&ul=en-gb&gaf=3&_s=1&tag_exp=115938465~115938468~118012007~118897920~118897930~119367802~119367810~120213116~120315471~120385423&sid=1787269314&sct=1&seg=0&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&dt=Pricing%20%7C%20Xoxoday%20Plum&en=page_view&_fv=1&_ss=1&tfd=1207' because it violates the document's Content Security Policy.",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7776384,
+      "created_at": 1787269321.0885942,
       "raw": {}
     },
     {
-      "id": "62a1abab",
+      "id": "729eb16e",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to connect to 'https://www.google.com/ccm/collect?rcb=3&frm=0&apvc=0&auid=250804083.1787267525&dt=Pricing%20%7C%20Xoxoday%20Plum&tid=AW-867479590&en=page_view&dl=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&scrsrc=www.googletagmanager.com&rnd=292836461.1787267525&navt=n&npa=0&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&tft=1787267524996&tfd=1580&tids=AW-867479590~AW-314851277&fmt=8' because it violates the document's Content Security Policy.",
+      "detail": "Refused to connect to 'https://www.google.com/rmkt/collect/867479590/?random=1787269314356&cv=11&fst=1787269314356&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j1h2v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~117227715~118897920~118897930~119367802~119367810~119793974~120315471~120385422&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=10&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=1865411109.1787269314&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=68&gcp=5' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7776446,
+      "created_at": 1787269321.088603,
       "raw": {}
     },
     {
-      "id": "2bd8e14e",
+      "id": "ddb215eb",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to load the image 'https://www.google.co.in/pagead/1p-user-list/314851277/?random=1787267524983&cv=11&fst=1787266800000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=3&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=250804083.1787...uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=9&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEAQM4h3DZzjxAvhmrZysC2vTVzPhSyquQkQM_q-gpzc174fkb7YjT_kDFoCzK0BwIZDVAYKqW2QqQxRz5iNTRjjXwgTe8eSOjxKLuGtmOuNanCm_p1ZBgLIgASl1RrA_pqRADn3j0oamH_IwsnbkhAGIZZR7aeHalmb1R_fFk4nXdK0zGkX21biFxGdBCfEgAN7KqbRou9sTBBslSa4UczqcLk7GbDiT235aI1E1bnUTuYRa64Okt4WewAGC5edC_NndLHc66SHC4ENB38xUtf6rpPsg&random=4140487663&rmt_tld=1&ipr=y' because it violates the following Content Security Policy directive: \"img-src 'self' data: blob: https://www.google.com.sg https://www.google.com https://ct.capterra.com https://grow.clearbitjs.com *.facebook.com https://googleads.g.doubleclick.net  https://px.ads.linkedin.com *.linkedin.com https://*.licdn.com https://*.amazonaws.com https://*.s3.amazonaws.com https://*.s3.ap-southeast-1.amazonaws.com https://cdnjs.cloudflare.com  https://usage.trackjs.com https://res.cloudinary.com https://data.pendo.io https://*.storage.googleapis.com https://cdn.jsdelivr.net  https://www.google-analytics.com https://www.googletagmanager.com https://via.placeholder.com https://www.youtube.com\".\n",
+      "detail": "Refused to connect to 'https://www.google.com/rmkt/collect/867479590/?random=1787269314356&cv=11&fst=1787269314356&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j1h2v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~117227715~118897920~118897930~119367802~119367810~119793974~120315471~120385422&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=10&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=1865411109.1787269314&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=68&gcp=5' because it violates the document's Content Security Policy.",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7776499,
+      "created_at": 1787269321.088607,
       "raw": {}
     },
     {
-      "id": "ad79078c",
+      "id": "af81087f",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "JS console error (no visible break)",
-      "detail": "Refused to load the image 'https://www.google.co.in/pagead/1p-user-list/867479590/?random=1787267524915&cv=11&fst=1787266800000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=3&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=250804083.1787...uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=9&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEAQM4h3JfuuX60SlU2mOqECPdEpo3Nv_4ql-P_pXA5TjLqAmnUAVMPvf93nPx9yKGAZIRaMRzstWpWMObIMdkedsPeTOFPs0fbIHsAhSanE9yRi5beCrx4nhtgs9c7xs4VbUznjyg4Kx_hbU0ODbVMBQVjJip6TkMJST1dSMnpdzqysamDLFJQMcMqG4LETXYeMPaI2x2sQ_kQsuVvGQbmS1-HVvLyw2eZbamSMX0U7HWZcvA3mXF96CDL85mZ0rhoFPALVfnjjyM0KwoD9s491ZO3Vw&random=3584475049&rmt_tld=1&ipr=y' because it violates the following Content Security Policy directive: \"img-src 'self' data: blob: https://www.google.com.sg https://www.google.com https://ct.capterra.com https://grow.clearbitjs.com *.facebook.com https://googleads.g.doubleclick.net  https://px.ads.linkedin.com *.linkedin.com https://*.licdn.com https://*.amazonaws.com https://*.s3.amazonaws.com https://*.s3.ap-southeast-1.amazonaws.com https://cdnjs.cloudflare.com  https://usage.trackjs.com https://res.cloudinary.com https://data.pendo.io https://*.storage.googleapis.com https://cdn.jsdelivr.net  https://www.google-analytics.com https://www.googletagmanager.com https://via.placeholder.com https://www.youtube.com\".\n",
+      "detail": "Refused to connect to 'https://www.google.com/rmkt/collect/314851277/?random=1787269314413&cv=11&fst=1787269314413&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j1h2v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~117227715~118897920~118897930~119367802~119367810~119793974~120315471~120385422&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=10&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=1865411109.1787269314&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=68&gcp=5' because it violates the following Content Security Policy directive: \"connect-src 'self' https://get.geojs.io https://listenat.xoxoday.com https://www.google-analytics.com https://stats.g.doubleclick.net https://capture.trackjs.com https://*.factors.ai wss://listenat.xoxoday.com https://*.googleapis.com https://www.youtube.com  https://*.storage.googleapis.com https://cdn.linkedin.oribi.io\".\n",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "console-error"
       ],
-      "created_at": 1787267531.7776556,
+      "created_at": 1787269321.0886104,
       "raw": {}
     },
     {
-      "id": "93cd1281",
+      "id": "a8c3dfb3",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -598,11 +598,11 @@
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.7776682,
+      "created_at": 1787269321.0886242,
       "raw": {}
     },
     {
-      "id": "12a3416e",
+      "id": "a397984f",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -614,11 +614,11 @@
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.777677,
+      "created_at": 1787269321.0886304,
       "raw": {}
     },
     {
-      "id": "5a13441d",
+      "id": "3a11f389",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -630,11 +630,11 @@
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.7776837,
+      "created_at": 1787269321.0886362,
       "raw": {}
     },
     {
-      "id": "a28bbc7d",
+      "id": "3f7ffab0",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -646,11 +646,11 @@
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.7776902,
+      "created_at": 1787269321.0886421,
       "raw": {}
     },
     {
-      "id": "a0e7771a",
+      "id": "e1a067a1",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -662,27 +662,27 @@
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.7776976,
+      "created_at": 1787269321.088647,
       "raw": {}
     },
     {
-      "id": "f4abfac5",
+      "id": "41753aae",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "Silent network failure: request_failed",
-      "detail": "https://px.ads.linkedin.com/attribution_trigger?pid=655099&time=1787267524690&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F (status=None)",
+      "detail": "https://px.ads.linkedin.com/attribution_trigger?pid=655099&time=1787269314038&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F (status=None)",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.7777047,
+      "created_at": 1787269321.0886517,
       "raw": {}
     },
     {
-      "id": "a0e75b3a",
+      "id": "202ca7f2",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
@@ -694,80 +694,80 @@
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.777711,
+      "created_at": 1787269321.08866,
       "raw": {}
     },
     {
-      "id": "68275d10",
+      "id": "ae0decd6",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "Silent network failure: request_failed",
-      "detail": "https://px.ads.linkedin.com/attribution_trigger?pid=655099&time=1787267524690&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F (status=None)",
+      "detail": "https://www.google.co.in/ads/ga-audiences?v=1&t=sr&slf_rd=1&_r=4&tid=G-XS952ZXZ9D&cid=82664148.1787269314&gtm=45je68j1h2v872134731z8848889637za20gzb848889637zd848889637&rcb=10&aip=1&dma=0&gcd=13l3l3l3l1l1&npa=0&frm=0&tag_exp=115938465~115938468~118012007~118897920~118897930~119367802~119367810~120213116~120315471~120385423&z=93990507 (status=None)",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.7777176,
+      "created_at": 1787269321.0886655,
       "raw": {}
     },
     {
-      "id": "00bb43e9",
+      "id": "630dd914",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "Silent network failure: request_failed",
-      "detail": "https://www.google.co.in/pagead/1p-user-list/314851277/?random=1787267524983&cv=11&fst=1787266800000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=3&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=250804083.1787267525&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=9&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEAQM4h3DZzjxAvhmrZysC2vTVzPhSyquQkQM_q-gpzc174fkb7YjT_kDFoCzK0BwIZDVAYKqW2QqQxRz5iNTRjjXwgTe8eSOjxKLuGtmOuNanCm_p1ZBgLIgASl1RrA_pqRADn3j0oamH_IwsnbkhAGIZZR7aeHalmb1R_fFk4nXdK0zGkX21biFxGdBCfEgAN7KqbRou9sTBBslSa4UczqcLk7GbDiT235aI1E1bnUTuYRa64Okt4WewAGC5edC_NndLHc66SHC4ENB38xUtf6rpPsg&random=4140487663&rmt_tld=1&ipr=y (status=None)",
+      "detail": "https://www.google.co.in/pagead/1p-user-list/314851277/?random=1787269314413&cv=11&fst=1787266800000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j1h2v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~117227715~118897920~118897930~119367802~119367810~119793974~120315471~120385422&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=10&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=1865411109.1787269314&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=9&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEAQM4h3Img3fL8QXggX-zurdvHhH_cdJFum-c0oD6I9-MXubfAQCdH5NsUHET1t1FQ7HgsDzs4XDDUKuTGmLkS4Qe2ziuU3ImsOLeGL5NpEWMp4vmhDeIQslJdIZ5GuAhsxPIaNz_Prt-JN_WzEAP4ZVfN78CqksZjkCD0NEBY4SQOJxzjy7uCn4UhYLBjanqan5bb5NZpK8O7Pe5YBr4aNU9N7mZCNdWJX-AMHUnxMhSCsp1uswNojIQHEnZIGRnwse3oH2vh7OyiEhsWPc_9lWFpxw&random=815296803&rmt_tld=1&ipr=y (status=None)",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.7777252,
+      "created_at": 1787269321.0886743,
       "raw": {}
     },
     {
-      "id": "fc79f914",
+      "id": "7ff784bd",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "Silent network failure: request_failed",
-      "detail": "https://www.google.co.in/pagead/1p-user-list/867479590/?random=1787267524915&cv=11&fst=1787266800000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j0v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422~120495808&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=3&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=250804083.1787267525&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=9&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEAQM4h3JfuuX60SlU2mOqECPdEpo3Nv_4ql-P_pXA5TjLqAmnUAVMPvf93nPx9yKGAZIRaMRzstWpWMObIMdkedsPeTOFPs0fbIHsAhSanE9yRi5beCrx4nhtgs9c7xs4VbUznjyg4Kx_hbU0ODbVMBQVjJip6TkMJST1dSMnpdzqysamDLFJQMcMqG4LETXYeMPaI2x2sQ_kQsuVvGQbmS1-HVvLyw2eZbamSMX0U7HWZcvA3mXF96CDL85mZ0rhoFPALVfnjjyM0KwoD9s491ZO3Vw&random=3584475049&rmt_tld=1&ipr=y (status=None)",
+      "detail": "https://www.google.co.in/pagead/1p-user-list/867479590/?random=1787269314356&cv=11&fst=1787266800000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be68j1h2v897014270z8848889637za20gzb848889637zd848889637xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115938465~115938469~117227715~118897920~118897930~119367802~119367810~119793974~120315471~120385422&u_w=1440&u_h=900&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F&rcb=10&frm=0&tiba=Pricing%20%7C%20Xoxoday%20Plum&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=1865411109.1787269314&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uamb=0&uam=&uap=Windows&uapv=&uaw=0&data=event%3Dgtag.config&ept=9&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEAQM4h3NpVxM7SQmRGO_twWpuHvKyHCRqqX8CLFANvYbOHdeQufwVZ98U9pqlHcW-rV8gtxabAlJFczHDL1WFDzbsbOAA1Y7cQZUePQrMFGWoPA4ZyFhrtPPLnwzgDrxaEIVe2I2qpMVc6mX4z9QORg_mL25hXZ1MRDtmYEO-lpSS_Tl2SxhwKoYHKEaatTxafXiI3lPgk-5jayaFCfwImPA3s21bpdNCzxwP3Oc3_gb7eeXBLKp4b7w4gfHuuD2KRsv-BF87590-F_nW1F6oH9Fm7Dg&random=2187633670&rmt_tld=1&ipr=y (status=None)",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.7777374,
+      "created_at": 1787269321.0886805,
       "raw": {}
     },
     {
-      "id": "8d10fe79",
+      "id": "be840e0c",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "Silent network failure: request_failed",
-      "detail": "https://www.google.co.in/ads/ga-audiences?v=1&t=sr&slf_rd=1&_r=4&tid=G-XS952ZXZ9D&cid=920720604.1787267525&gtm=45je68j0v872134731z8848889637za20gzb848889637zd848889637&rcb=5&aip=1&dma=0&gcd=13l3l3l3l1l1&npa=0&frm=0&tag_exp=115938465~115938468~118897920~118897930~119367802~119367810~119381662~120213116~120315471~120385422&z=279987668 (status=None)",
+      "detail": "https://px.ads.linkedin.com/attribution_trigger?pid=655099&time=1787269314038&url=https%3A%2F%2Fsignup.xoxoday.in%2Fplum-pricing%2F (status=None)",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
         "silent-failure",
         "request_failed"
       ],
-      "created_at": 1787267531.777744,
+      "created_at": 1787269321.0886848,
       "raw": {}
     },
     {
-      "id": "78562285",
+      "id": "29330a3a",
       "url": "https://signup.xoxoday.in/plum-pricing/",
       "agent": "a11y_perf",
       "severity": "medium",
       "title": "LCP exceeds 'good' threshold",
-      "detail": "LCP = 5855.247999999998 (threshold: 2500)",
+      "detail": "LCP = 5462.033000000001 (threshold: 2500)",
       "evidence_uri": null,
       "confidence": 1.0,
       "tags": [
@@ -775,7 +775,7 @@
         "core-web-vitals",
         "largest-contentful-paint"
       ],
-      "created_at": 1787267556.6584232,
+      "created_at": 1787269345.357248,
       "raw": {}
     }
   ]

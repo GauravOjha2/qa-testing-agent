@@ -30,6 +30,18 @@ def test_classify_demo_form():
     assert t.page_type == PageType.DEMO_FORM
 
 
+def test_classify_hyphenated_product_pricing_slug():
+    # /plum-pricing/ must be PRICING_ROI, not OTHER — the dynamic GEO/AEO
+    # cross-check only fires on product/pricing pages.
+    t = classify("https://signup.xoxoday.in/plum-pricing/")
+    assert t.page_type == PageType.PRICING_ROI
+
+
+def test_classify_product_page():
+    t = classify("https://www.xoxoday.com/plum/")
+    assert t.page_type == PageType.PRODUCT
+
+
 def test_demo_subset_covers_key_types():
     urls = [
         "https://www.xoxoday.com/",

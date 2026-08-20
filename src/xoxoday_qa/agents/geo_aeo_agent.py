@@ -19,7 +19,7 @@ from playwright.sync_api import Browser
 
 from ..config import RUN
 from ..dom_utils import read_meta_description
-from ..models import AgentSource, Finding, PageTarget, Severity
+from ..models import AgentSource, Finding, PageTarget, PageType, Severity
 from ..playwright_utils import goto_and_settle, new_context, throttle
 from .llm_client import call_named_engine, call_text_model
 
@@ -55,13 +55,36 @@ def run(browser: Browser, target: PageTarget, shard_key: str = "default") -> lis
 
     ctx.close()
 
-    if target.page_type.value == "product":
-        findings.extend(_dynamic_layer(target, ground_truth_text))
+    # The dynamic multi-LLM cross-check is meaningful wherever buyers evaluate
+    # a product — product pages AND their pricing pages. The detail of the
+    # pass finding records exactly which layers ran so reports can't
+    # overstate coverage.
+    dynamic_detail = ""
+    if target.page_type in (PageType.PRODUCT, PageType.PRICING_ROI):
+        dynamic_findings, engines_used = _dynamic_layer(target, ground_truth_text)
+        findings.extend(dynamic_findings)
+        if engines_used:
+            dynamic_detail = (
+                f" Dynamic LLM cross-check asked {len(BUYER_QUESTIONS_TEMPLATE)} "
+                f"buyer questions across: {', '.join(sorted(engines_used))}."
+            )
+        else:
+            dynamic_detail = (
+                " Dynamic LLM cross-check was in scope for this page type but "
+                "no answer-engine API keys were configured."
+            )
+    else:
+        dynamic_detail = (
+            " Dynamic LLM cross-check not applicable to this page type; it "
+            "runs on product and pricing pages."
+        )
 
     if not findings:
         findings.append(Finding(
             url=target.url, agent=AgentSource.GEO_AEO, severity=Severity.INFO,
-            title="No GEO/AEO issues found", tags=["geo_aeo", "pass"],
+            title="No GEO/AEO issues found",
+            detail="Static schema/meta-tag checks passed." + dynamic_detail,
+            tags=["geo_aeo", "pass"],
         ))
 
     return findings
@@ -113,8 +136,12 @@ def _static_layer(page, target: PageTarget) -> tuple[list[Finding], str]:
     return findings, ground_truth
 
 
-def _dynamic_layer(target: PageTarget, ground_truth: str) -> list[Finding]:
+def _dynamic_layer(target: PageTarget, ground_truth: str) -> tuple[list[Finding], set[str]]:
+    """Ask configured answer engines buyer questions and diff their claims
+    against page ground truth. Returns findings plus the set of engines
+    that actually answered, so callers can report real coverage."""
     findings: list[Finding] = []
+    engines_used: set[str] = set()
     product_name = _guess_product_name(target.url)
     questions = [q.format(product=product_name) for q in BUYER_QUESTIONS_TEMPLATE]
 
@@ -123,6 +150,7 @@ def _dynamic_layer(target: PageTarget, ground_truth: str) -> list[Finding]:
             claim = call_named_engine(engine, question)
             if claim is None:
                 continue  # engine not configured, skip silently
+            engines_used.add(engine)
 
             judge_raw = call_text_model(
                 DIFF_JUDGE_PROMPT.format(claim=claim, ground_truth=ground_truth[:4000])
@@ -143,7 +171,7 @@ def _dynamic_layer(target: PageTarget, ground_truth: str) -> list[Finding]:
                     tags=["geo_aeo", "dynamic", engine],
                 ))
 
-    return findings
+    return findings, engines_used
 
 
 def _guess_product_name(url: str) -> str:
