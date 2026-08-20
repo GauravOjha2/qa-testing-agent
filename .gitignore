@@ -16,3 +16,6 @@ Xoxoday-QA-Report.html
 
 # Run artifacts
 shard_manifest.json
+
+# Local secrets (never commit)
+.env

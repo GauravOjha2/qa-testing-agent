@@ -12,6 +12,27 @@ import os
 from dataclasses import dataclass, field
 
 
+def _load_dotenv(path: str = ".env") -> None:
+    """Load KEY=VALUE pairs from a local .env file if present.
+
+    Lets you keep a single Gemini API key in a gitignored file instead of
+    exporting it per-shell. Real environment variables always win over
+    .env values.
+    """
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+_load_dotenv()
+
+
 @dataclass
 class SafetyConfig:
     # Identify ourselves honestly. A real, contactable UA is non-negotiable

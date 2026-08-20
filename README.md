@@ -57,8 +57,12 @@ and the diff judge in `geo_aeo_agent.py` reason about whether a result is
 pip install -r requirements.txt
 playwright install chromium
 npm install axe-core                      # bundled locally; no CDN dependency
-export GEMINI_API_KEY=...                 # optional — omit to run in mock LLM mode
-export ANTHROPIC_API_KEY=...              # optional
+
+# One Gemini API key drives every LLM layer (vision judge, GEO/AEO
+# cross-check, diff judge). Claude/Perplexity are optional extras — any
+# engine whose key is unset is skipped, never a failure. Put the key in
+# a gitignored .env file (GEMINI_API_KEY=...) or export it per-shell.
+echo "GEMINI_API_KEY=your-key-here" > .env
 export QA_AGENT_CONTACT_EMAIL=you@company.com
 
 # explicit URL list
