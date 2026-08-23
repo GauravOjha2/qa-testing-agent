@@ -19,5 +19,8 @@ local_findings_adk/
 screenshots/
 shard_manifest.json
 
+# adk web local runtime storage (session.db)
+.adk/
+
 # Local secrets (never commit)
 .env

@@ -251,7 +251,10 @@ Given a target URL:
    (meta description, JSON-LD types, body text excerpt).
 2. Answer EXACTLY these buyer questions, supplied per-domain by the
    operator:
-{buyer_questions}
+{buyer_questions?}
+   If the list above came out empty (interactive mode), first derive five
+   realistic buyer questions for this product/category yourself, then
+   answer those - and label them 'self-derived' in your report.
    Answer each concisely, based ONLY on the ground truth.
 3. For each answer, judge factual support: does the scraped ground truth
    actually back the claim? Classify each as SUPPORTED / UNSUPPORTED /
