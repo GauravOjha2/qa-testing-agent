@@ -8,13 +8,15 @@ __pycache__/
 # Node
 node_modules/
 
-# Generated reports - scratch builds ignored, final deliverable committed
+# Generated reports and PDFs - build outputs, never source
 *.pdf
-!Xoxoday-QA-Report.pdf
 report.html
 Xoxoday-QA-Report.html
 
 # Run artifacts
+local_findings/
+local_findings_adk/
+screenshots/
 shard_manifest.json
 
 # Local secrets (never commit)

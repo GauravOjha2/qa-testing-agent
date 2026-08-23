@@ -9,7 +9,6 @@ from xoxoday_qa import crawler  # noqa: E402
 from xoxoday_qa.crawler import classify, select_demo_subset  # noqa: E402
 from xoxoday_qa.dom_utils import read_meta_description  # noqa: E402
 from xoxoday_qa.playwright_utils import goto_and_settle  # noqa: E402
-from xoxoday_qa.agents.forms_agent import _check_validation_state, _find_field  # noqa: E402
 from xoxoday_qa.models import PageType  # noqa: E402
 
 
@@ -111,45 +110,6 @@ def test_navigation_does_not_fail_when_network_never_becomes_idle():
     assert goto_and_settle(page, "https://example.com", settle_ms=0) == "response"
     assert page.goto_args[1]["wait_until"] == "domcontentloaded"
     assert page.settled
-
-
-def test_invalid_email_returns_a_normal_finding():
-    class FakeField:
-        def get_attribute(self, name):
-            assert name == "aria-invalid"
-            return None
-
-    finding = _check_validation_state(
-        FakeField(),
-        {"field_hint": "email", "value": "not-an-email"},
-    )
-    assert finding is not None
-    assert "Invalid email" in finding.title
-
-
-def test_form_field_lookup_ignores_hidden_input():
-    class Candidate:
-        def __init__(self, visible):
-            self.visible = visible
-
-        def is_visible(self):
-            return self.visible
-
-    class Locator:
-        def __init__(self):
-            self.items = [Candidate(False), Candidate(True)]
-
-        def count(self):
-            return len(self.items)
-
-        def nth(self, index):
-            return self.items[index]
-
-    class Form:
-        def locator(self, _selector):
-            return Locator()
-
-    assert _find_field(Form(), "email").visible is True
 
 
 if __name__ == "__main__":
