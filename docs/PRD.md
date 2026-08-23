@@ -28,9 +28,12 @@ four classes of defects that actually hurt a B2B SaaS business:
 
 ## Scope
 
-**In scope:** scanning public xoxoday.com web properties page-by-page with four
-specialist checks, deduplicating results, and producing an executive-ready PDF
-report with screenshot evidence.
+**In scope:** scanning public marketing/product pages page-by-page with four
+specialist checks, orchestrated as a Google ADK multi-agent system (supervisor
++ 4 specialists), deduplicating results, and producing an executive-ready PDF
+report with screenshot evidence. Xoxoday properties are the primary target,
+but the pipeline is URL-agnostic — per-domain buyer questions make any target
+auditable without code changes.
 
 **Out of scope:** load testing, authenticated-area scanning, exploiting any
 vulnerability, automated exploitation/remediation, mobile-native apps.
@@ -44,8 +47,8 @@ vulnerability, automated exploitation/remediation, mobile-native apps.
 | F3 | Probe forms with boundary/i18n values and read validation state **without ever submitting** |
 | F4 | Diff JSON-LD/meta claims against rendered content; ask configured LLM engines buyer questions and diff answers against page ground truth |
 | F5 | Run WCAG 2.2 AA automated audit (axe-core), Core Web Vitals (Lighthouse), and a console/network monitor per page |
-| F6 | Persist raw findings as inspectable JSON; dedupe + rank across pages |
-| F7 | Render a self-contained PDF report: exec summary, confirmed issues with plain-English context, manual-review items, evidence screenshots, methodology, limitations |
+| F6 | Persist raw findings as inspectable JSON — every tool response harvested from the ADK event stream, deduped and ranked across checks |
+| F7 | Render a self-contained PDF report (`generate_pdf.py`): KPI summary, top risks, embedded evidence screenshots (pre-sliced for print), full findings list ranked by severity, safety-compliance statement. Methodology/limitations live in README + docs |
 
 ## Non-functional requirements
 
@@ -54,7 +57,8 @@ vulnerability, automated exploitation/remediation, mobile-native apps.
 - **Honesty:** when a layer didn't run (no API key, tool unavailable), the
   findings say so explicitly. No overstated coverage.
 - **Zero infrastructure:** full pipeline runs on one machine; no cloud account needed.
-- **Cost ceiling:** one Gemini API key drives all AI layers; ~11 small calls/page.
+- **Cost ceiling:** one Gemini API key drives all AI layers; a handful of small
+  model calls per page (most checks are deterministic tool execution).
 
 ## Success criteria
 

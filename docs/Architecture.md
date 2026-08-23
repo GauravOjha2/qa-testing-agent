@@ -1,81 +1,102 @@
-# Architecture — Xoxoday QA Agent
+# Architecture — QA Testing Agent (Google ADK)
 
 ## Pipeline flow
 
 ```
-scripts/run_local_demo.py
+adk_qa_pipeline/main.py  (--url <target>)
   │
-  ├─► crawler.py ──── sitemap / explicit URLs ──► classify() ──► [PageTarget]
+  ├─► seeds session state {target_url, buyer_questions}
   │
-  ├─► per page, one shared Chromium session:
-  │     visual_qa.py      screenshots @3 breakpoints → vision judge (rubric JSON)
-  │     forms_agent.py    fill boundary/i18n values → read aria-invalid (NEVER submits)
-  │     geo_aeo_agent.py  static: JSON-LD/meta vs rendered text
-  │                       dynamic: buyer questions → LLM engines → diff judge
-  │     a11y_perf_agent.py axe-core (local bundle) + Lighthouse CLI + PageMonitor
+  ├─► qa_supervisor_agent (gemini-flash-latest, temperature=0)
+  │     transfers to each specialist exactly once, passing the URL verbatim:
   │
-  ├─► store.py ──── one JSON per page ──► local_findings/<url>.json
-  │                 screenshots ────────► screenshots/local/<page>_<bp>.png
+  │     visual_qa_agent ──► capture_viewport_screenshots(url)
+  │                          full-page PNGs @ mobile/tablet/desktop
+  │                          + deterministic horizontal-overflow probe
+  │     a11y_perf_agent ───► run_axe_core_audit(url)      WCAG 2.2 A/AA,
+  │                          run_lighthouse_audit(url)    LCP/CLS/INP,
+  │                                                       silent failures
+  │     forms_agent ───────► test_form_boundaries(url)   boundary/i18n fills,
+  │                          [guardrail]                 aria-invalid reads,
+  │                                                      submit IMPOSSIBLE
+  │     geo_aeo_agent ─────► fetch_page_text_snapshot(url) then self-consistency
+  │                          hallucination diff against per-domain questions
   │
-  └─► synthesis_agent.py ── dedupe by (agent,title) → rank by severity → report.html
+  ├─► every specialist ends with transfer_to_agent(qa_supervisor_agent)
+  │
+  └─► main.py harvests tool responses from the ADK event stream,
+      dedupes findings, ranks severity -> local_findings_adk/adk_run_*.json
 
-scripts/generate_report.py
-  └─► load local_findings/ → classify signal vs noise → styled HTML → headless
-      Chromium print-to-PDF with embedded base64 screenshots → Xoxoday-QA-Report.pdf
+adk_qa_pipeline/generate_pdf.py
+  └─► newest adk_run_*.json -> KPI cards, top risks, evidence screenshots
+      (pre-sliced to page-sized chunks), severity cards -> ADK-QA-Report_<slug>.pdf
 ```
 
 ## Folder structure
 
 ```
-src/xoxoday_qa/
-  config.py            SafetyConfig + RunConfig; loads .env; single source of truth
-  models.py            Finding / PageResult / PageTarget dataclasses, severity enums
-  crawler.py           sitemap expansion, robots.txt (fail-closed), classification
-  playwright_utils.py  throttle(), PageMonitor (console/network), browser_session(),
-                       goto_and_settle(), screenshot_at_breakpoints()
-  store.py             save_page_result() / load_all_results() — local JSON only
-  dom_utils.py         meta-description reader (immediate DOM eval, no locator waits)
-  agents/
-    visual_qa.py       rubric prompt → vision model → Finding list; tags mock mode
-    forms_agent.py     BOUNDARY_TEST_CASES, NEVER_SUBMIT_PAGE_TYPES enforcement
-    geo_aeo_agent.py   _static_layer + _dynamic_layer(returns engines_used)
-    a11y_perf_agent.py axe injection (local-first), CWV thresholds, silent failures
-    synthesis_agent.py dedupe/rank/summarize/render_html_report
-    llm_client.py      provider wrapper: Gemini/Claude/Perplexity + is_mock_mode()
-scripts/
-  run_local_demo.py    single-machine pipeline runner (CLI)
-  generate_report.py   findings → founder PDF (signal/noise separation included)
-tests/test_crawler.py  11 unit tests: classification, navigation, form helpers
+adk_qa_pipeline/
+  __init__.py          exports root_agent (adk web compatibility)
+  agents.py            4 specialists + supervisor + prevent_form_submit_guardrail
+  tools.py             execution layer: robots gate, throttle reuse, axe/Lighthouse/
+                       screenshots/forms/ground-truth tools, per-domain buyer questions
+  main.py              async runner; harvests event stream; aggregates JSON log
+  generate_pdf.py      PDF renderer with page-sized screenshot slicing
+src/xoxoday_qa/        shared core the tools import (single source of truth):
+  config.py            SafetyConfig + RunConfig; loads .env
+  crawler.py           check_robots_allowed (fail-closed), classification helpers
+  playwright_utils.py  throttle(), PageMonitor, browser_session(), goto_and_settle(),
+                       screenshot_at_breakpoints()
+  models.py, dom_utils.py   shared dataclasses / meta reader
+tests/test_crawler.py  unit tests for classification, navigation, DOM helpers
 docs/                  PRD, Architecture, Rules, Phases, Design, Memory
-local_findings/        raw scan output (committed as evidence)
-screenshots/local/     breakpoint captures (committed as evidence)
-.env                   GEMINI_API_KEY — GITIGNORED, never commit
+local_findings_adk/    run artifacts (gitignored): tool payloads + aggregated log
+screenshots/local/     breakpoint captures (gitignored; regenerated per run)
+.env                   GEMINI_API_KEY - GITIGNORED, never commit
 ```
+
+Legacy raw-Python pipeline (agents/store/synthesis/scripts) lives on the
+`procedural-pipeline` branch, not here.
 
 ## Technical stack
 
 | Layer | Choice | Why |
 |---|---|---|
-| Language | Python 3.13 | team-familiar, Playwright first-class support |
-| Browser automation | Playwright (sync) | real Chromium, network/console interception |
-| A11y | axe-core 4.10 (npm, injected locally) | no CDN dependency; site CSP can't block it |
+| Language | Python 3.13 | team-familiar; Playwright + ADK first-class support |
+| Agent framework | google-adk (>=1.0) | LlmAgent sub-agent transfers, before_tool_callback guardrails, state-injected instructions |
+| Models | gemini-flash-latest (specialists+supervisor), gemini-pro-latest (GEO/AEO judgment) | fast/cheap routing where determinism matters, stronger reasoning for factual diffing |
+| Browser automation | Playwright (sync API inside `asyncio.to_thread`) | real Chromium; worker threads dodge the sync-API-in-async-loop restriction |
+| A11y | axe-core 4.10 (npm bundle injected locally) | site CSP can't block a local injection |
 | Perf | Lighthouse CLI via npx subprocess | Core Web Vitals without Node API plumbing |
-| AI | Gemini (`gemini-flash-latest`) via `google-generativeai` | cheap tier; Claude/Perplexity optional, auto-skipped |
-| Persistence | local JSON files | inspectable, diffable, zero infra |
-| Report | HTML → PDF via Playwright `page.pdf()` | reuses installed Chromium; self-contained output |
-| Tests | pytest | standard, fast |
+| Persistence | local JSON artifacts per tool call + merged run log | inspectable, diffable, zero infra |
+| Report | HTML -> PDF via Playwright `page.pdf()`; Pillow pre-slicing | tall captures can't glitch Chromium's print tiler |
 
 ## Key design decisions
 
-- **Uniform Finding schema** (models.py): every agent emits the same shape so
-  synthesis/report never care who produced a finding.
-- **Severity mapping:** axe impact → severity (critical→CRITICAL … minor→LOW);
-  unmapped impacts default MEDIUM.
-- **Signal vs noise lives in generate_report.py**, not in the agents: raw
-  findings stay complete in JSON; presentation-layer classification keeps the
-  report readable while the appendix retains everything.
-- **Mock mode is explicit:** `llm_client.is_mock_mode()`; vision/GEO pass
-  findings carry `[MOCK MODE]` detail + `mock` tag so reports can't overstate.
-- **Cloud removed deliberately:** earlier scaffolding had Cloud Run Jobs/Firestore;
-  stripped in favor of single-machine sequential scanning. Stateless-per-page
-  design means horizontal scale-out later is infrastructure work, not a rewrite.
+- **Aggregation trusts tools, not prose:** main.py harvests every
+  `function_response` payload from the event stream; the supervisor's JSON
+  summary is decorative, the structured log is authoritative.
+- **Guardrail is defense-in-depth:** `prevent_form_submit_guardrail`
+  (before_tool_callback, kwarg `tool_context=` in ADK >=1.x) blocks submit
+  intent at four levels - submit-named tools, click-intent x submit selectors
+  (name OR args, escape-normalized), action="submit" args, and boundary tests
+  pointed at a submit control. The tool itself also never touches submit.
+- **Deterministic orchestration contract:** supervisor temperature=0 with two
+  legal outputs (a transfer call, or the final aggregate only after all four
+  completion markers); specialists must end by calling
+  `transfer_to_agent(qa_supervisor_agent)` - prose handbacks end the run.
+- **Sync Playwright off-loop:** every tool is an `async def` wrapper over
+  `asyncio.to_thread(sync_impl)`; worker threads have no running loop.
+- **Per-domain configurability via session state:** `{buyer_questions}` is
+  injected into the GEO/AEO instruction from state seeded by main.py;
+  `BUYER_QUESTIONS_BY_DOMAIN` in tools.py is the single place to customize.
+- **State-injection safety:** only geo_aeo's instruction contains a `{state}`
+  placeholder; all instructions audited so literal JSON braces pass through
+  untouched (`_is_valid_state_name` gate).
+- **Robots gate fail-closed, reused:** every tool call runs
+  `check_robots_allowed` before navigation; unreachable robots.txt aborts.
+- **PDF print-tile workaround:** screenshots are width-normalized and sliced
+  into ~1.45 aspect chunks before embedding; multi-page-tall images otherwise
+  render black bands in Chromium's printer.
+- **Cloud removed deliberately** (see Phases.md); legacy pipeline preserved on
+  its own branch rather than deleted from history.
