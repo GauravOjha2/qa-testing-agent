@@ -1,0 +1,15 @@
+.git
+.gitignore
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+node_modules/
+local_findings/
+local_findings_adk/
+screenshots/
+.adk/
+.env
+*.pdf
+Dockerfile
+.dockerignore
