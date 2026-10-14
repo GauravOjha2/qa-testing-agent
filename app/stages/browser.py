@@ -21,6 +21,9 @@ async def new_context(
     context = await browser.new_context(
         viewport=viewport,
         user_agent=config.USER_AGENT,
+        # Audit contexts bypass CSP/Trusted-Types so axe-core can be injected
+        # on hardened targets (e.g. sites enforcing TrustedScript).
+        bypass_csp=True,
         device_scale_factor=2 if viewport["width"] < 500 else 1,
         ignore_https_errors=False,
         java_script_enabled=True,

@@ -114,6 +114,10 @@ def new_context(browser: Browser, viewport: dict[str, int]) -> BrowserContext:
     return browser.new_context(
         viewport=viewport,
         user_agent=SAFETY.resolved_user_agent(),
+        # Audit contexts must bypass CSP/Trusted-Types so we can inject the
+        # axe-core bundle on hardened sites (YouTube, Google, GitHub enforce
+        # TrustedScript). Read-only auditing only; nothing is exfiltrated.
+        bypass_csp=True,
     )
 
 

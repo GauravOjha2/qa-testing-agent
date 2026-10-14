@@ -329,25 +329,45 @@ def _run_lighthouse_audit_sync(url: str) -> dict[str, Any]:
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
         out_path = tmp.name
 
+    chrome_flags = "--headless --no-sandbox --disable-dev-shm-usage --disable-gpu"
+    report = None
+    last_exc: Exception | None = None
+    for attempt in (1, 2):
+        try:
+            subprocess.run(
+                [
+                    npx, "--yes", "lighthouse", url,
+                    "--output=json", f"--output-path={out_path}",
+                    f"--chrome-flags={chrome_flags}",
+                    "--only-categories=performance,accessibility",
+                    "--quiet",
+                ],
+                check=True, timeout=240, capture_output=True, text=True,
+            )
+        except Exception as exc:
+            last_exc = exc
+            # Lighthouse frequently exits non-zero on hostile targets yet
+            # still writes a usable report - salvage it if present.
+            if Path(out_path).exists() and Path(out_path).stat().st_size > 100:
+                break
+            continue
+        break
     try:
-        subprocess.run(
-            [
-                npx, "--yes", "lighthouse", url,
-                "--output=json", f"--output-path={out_path}",
-                "--chrome-flags=--headless --no-sandbox",
-                "--only-categories=performance,accessibility",
-                "--quiet",
-            ],
-            check=True, timeout=180, capture_output=True,
-        )
-        with open(out_path) as f:
-            report = json.load(f)
+        if Path(out_path).exists() and Path(out_path).stat().st_size > 100:
+            with open(out_path) as f:
+                report = json.load(f)
     except Exception as exc:
+        last_exc = exc
+        report = None
+    if report is None:
+        detail = f"{type(last_exc).__name__}: {last_exc}" if last_exc else "no report produced"
+        if last_exc is not None and getattr(last_exc, "stderr", None):
+            detail += " | stderr: " + str(last_exc.stderr)[-300:]
         return _record("run_lighthouse_audit", {
             "status": "error",
             "tool": "run_lighthouse_audit",
             "url": url,
-            "error": f"{type(exc).__name__}: {exc}",
+            "error": detail,
             "findings": [],
         })
 
