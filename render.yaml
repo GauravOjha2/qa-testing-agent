@@ -1,0 +1,16 @@
+# Render blueprint — engine service (Docker). UI deploys separately on Vercel.
+# Plan note: starter (512MB) is too small for Chromium + Lighthouse; use
+# standard (2GB). Suspend the service when not demoing to save credits.
+services:
+  - type: web
+    name: sitesentinel-engine
+    runtime: docker
+    plan: standard
+    healthCheckPath: /api/health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false          # set in the Render dashboard, never in the repo
+      - key: SITESENTINEL_ENGINE
+        value: adk
+      - key: SITESENTINEL_ALLOWED_ORIGINS
+        sync: false          # your Vercel UI origin, e.g. https://your-app.vercel.app
