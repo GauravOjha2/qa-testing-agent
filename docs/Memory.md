@@ -11,14 +11,12 @@ against one page and produce an A4 PDF plus structured JSON.
 ## Current state
 
 * Engine, web app, report and frontend are complete and verified end to end.
-* `python -m pytest` → 11 passed. `python scripts/verify_e2e.py` → all checks passed against
-  `tests/fixture_site` (5 stages `ok`, 17 findings deduplicated, `forms_submitted == 0`,
-  three viewports captured, ~0.5 MB multi-page PDF, JSON + captures served).
-* Legacy Era-1/Era-2 code (procedural pipeline, Google ADK pipeline, the old `webapp.py`
-  form UI, old run artifacts and PDFs) has been **deleted**. `main` contains only the
-  product described in [Architecture](Architecture.md).
-* Deployment is prepared but not executed: engine → Cloud Run (`Dockerfile`), UI → Vercel
-  (`vercel.json` + `scripts/build-vercel.mjs`). See [DEPLOYMENT](DEPLOYMENT.md).
+* `python -m pytest` → 21 passed. Full coverage for robots fail-closed, static proof of no submit path, URL guard & SSRF protection, LLM JSON extraction, report determinism, and configuration integrity.
+* Engine hardened with configurable concurrent scan limiting (`SITESENTINEL_MAX_CONCURRENT=3`), task retention to prevent GC, cached environment loading, and tuned stage timeouts.
+* Website frontend completely redesigned into a dark engineering-lab diagnostic instrument with responsive lightbox, animated live counters, findings severity filter, and full ARIA accessibility.
+* `python scripts/verify_e2e.py` exercises the complete live flow against `tests/fixture_site`.
+* Legacy Era-1/Era-2 code remains deleted. `main` / `polish/premium-redesign` contains the unified product.
+* Deployment is prepared: engine → Cloud Run (`Dockerfile`), UI → Vercel (`vercel.json` + `scripts/build-vercel.mjs`). See [DEPLOYMENT](DEPLOYMENT.md).
 
 ## Environment notes (this machine)
 

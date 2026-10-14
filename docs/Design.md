@@ -5,34 +5,23 @@ the **A4 PDF report**.
 
 ## Direction
 
-Paper and ink. The page should read like a document written by someone who knows the
-subject — not a landing page performing enthusiasm. That means: one neutral background,
-near-black type, hairline rules instead of boxes and shadows, generous space, and colour
-reserved almost entirely for severity.
+Dark engineering-lab diagnostic instrument. The interface balances high-density information architecture with precision typography and purposeful color: dark canvas (`#09090b`), high-contrast text hierarchy (`#e4e4e8`), hairline borders (`rgba(255,255,255,.08)`), and color reserved strictly for state and severity (`critical: #ef4444`, `high: #f97316`, `medium: #eab308`, `low: #3b82f6`, `ok: #22c55e`).
 
-Concretely, the following were deliberately removed after the first pass, because they
-were noise rather than design: the aurora/orb/meteor backdrop, the hero particle canvas,
-gradient-filled headline text, gradient buttons, a tool marquee, a "stack" grid, orbiting
-dots, border beams, magnetic buttons, 3D card tilt, a serif italic accent, and every badge
-naming an implementation detail (`Playwright`, `axe-core`, `gemini-flash-latest`). None of
-that told the user anything; all of it competed with the content.
+No generic AI SaaS templates, no lorem ipsum, and no decorative features that don't perform work. Implementation details are kept out of marketing copy. The landing page acts as an instrument console; during a scan, live SSE progress and screenshot captures stream directly into the live preview pane.
 
 ## Tokens (`static/app.css`)
 
 | Token | Value | Use |
 |---|---|---|
-| `--paper` | `#fafaf9` | page background |
-| `--card` | `#ffffff` | panels, inputs, gallery frames |
-| `--ink` | `#0f0f0e` | headings, primary buttons, progress fill |
-| `--ink-2` | `#57534e` | body copy |
-| `--ink-3` | `#8a8781` | labels, meta, mono captions |
-| `--line` / `--line-2` | `#e7e5e4` / `#d6d3d1` | hairlines, input borders |
-| `--accent` | `#2563eb` | focus ring, running state only |
-| `--crit` `--high` `--med` `--low` `--ok` | `#d92d20` `#c2410c` `#a16207` `#175cd3` `#087443` | severity, shared with the PDF |
+| `--bg` / `--bg-2` | `#09090b` / `#0f0f13` | deep canvas background |
+| `--surface` / `--surface-2` | `#141418` / `#1a1a20` | panels, cards, inputs |
+| `--text` / `--text-2` / `--text-3` | `#e4e4e8` / `#a1a1aa` / `#71717a` | headings, body, labels & meta |
+| `--border` / `--border-2` | `rgba(255,255,255,.08)` / `rgba(255,255,255,.12)` | precision hairline borders |
+| `--accent` / `--grad` | `#818cf8` / `linear-gradient(135deg, #6366f1, #818cf8, #22d3ee)` | primary brand gradient |
+| `--sev-critical` `--sev-high` `--sev-medium` `--sev-low` `--sev-ok` | `#ef4444` `#f97316` `#eab308` `#3b82f6` `#22c55e` | severity, shared across web & PDF |
 
-**Inter** for everything structural; **JetBrains Mono** for values the machine produced —
-URLs, durations, metric numbers, finding ids, stage status. Radii stay small (8–12px):
-pills read consumer, and this is a tool.
+**Inter** for all structural typography; **JetBrains Mono** for machine-generated data — URLs, timestamps, metrics, IDs, code snippets. Border radii are restrained (6–14px) to retain an engineering instrument aesthetic.
+
 
 The palette is not invented. It is the pattern that holds across the reference set used to
 design this: near-monochrome surfaces, one accent, mono for data (shadcn, Refero, Component

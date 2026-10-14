@@ -91,8 +91,11 @@ multi-page A4 PDF downloads, and the JSON artifact and evidence captures serve.
 Offline unit tests (no network, no browser):
 
 ```powershell
-python -m pytest        # 11 tests, including a static proof that no submit path exists
+python -m pytest        # 21 tests, including static proof that no submit path exists, URL guard, JSON extract, and determinism
 ```
+
+Concurrency is controlled via `SITESENTINEL_MAX_CONCURRENT` (defaults to 3 concurrent scans with FIFO queueing).
+
 
 ---
 
