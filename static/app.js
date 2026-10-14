@@ -1,7 +1,8 @@
 /* ============================================================================
-   SiteSentinel — Premium Frontend Controller
-   Precision diagnostic instrument: landing → live console (SSE) → QA workspace.
-   Zero external dependencies. Pure vanilla ES2022.
+   SiteSentinel — Frontend controller v2 ("Instrument")
+   Landing → live console (SSE) → QA workspace. Zero dependencies, ES2022.
+   Interactions: scroll reveal, mouse spotlight, seamless ticker, SVG progress
+   dial, count-ups, colored telemetry, focus-managed lightbox, health status.
    ========================================================================== */
 
 (() => {
@@ -23,7 +24,9 @@
   const svg = (paths, size = 18, viewBox = "0 0 24 24") =>
     `<svg viewBox="${viewBox}" width="${size}" height="${size}" aria-hidden="true">${paths}</svg>`;
 
-  /* ─── Static Data ─────────────────────────────────────────────────────── */
+  const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  /* ─── Static data ─────────────────────────────────────────────────────── */
   const ICONS = {
     layout: '<rect x="3" y="4" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 20h8M12 17v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 8.5h18" fill="none" stroke="currentColor" stroke-width="1.6"/>',
     a11y: '<circle cx="12" cy="4.6" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 8.6c2.4.9 4.9 1.3 7.5 1.3s5.1-.4 7.5-1.3M12 9.9v4.3m0 0-3 6m3-6 3 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -34,88 +37,41 @@
   };
 
   const CHECKS = [
-    {
-      num: "01",
-      title: "Responsive Viewports",
+    { num: "01", title: "Responsive Viewports",
       desc: "Full-page captures at mobile (390px), tablet (768px), and desktop (1440px), plus horizontal-overflow fault detection.",
-      icon: "layout",
-      color: "#818cf8",
-      tint: "rgba(129,140,248,.10)",
-      edge: "rgba(129,140,248,.22)",
-    },
-    {
-      num: "02",
-      title: "Accessibility Audit",
+      icon: "layout", color: "#8b8ff8", tint: "rgba(139,143,248,.10)", edge: "rgba(139,143,248,.24)" },
+    { num: "02", title: "Accessibility Audit",
       desc: "Automated engine enforcing WCAG 2.2 A/AA criteria with precise DOM selector and code snippet evidence.",
-      icon: "a11y",
-      color: "#38bdf8",
-      tint: "rgba(56,189,248,.10)",
-      edge: "rgba(56,189,248,.22)",
-    },
-    {
-      num: "03",
-      title: "Core Web Vitals",
+      icon: "a11y", color: "#67e8f9", tint: "rgba(103,232,249,.08)", edge: "rgba(103,232,249,.2)" },
+    { num: "03", title: "Core Web Vitals",
       desc: "Mobile performance evaluation measuring LCP, CLS, and TBT/INP against production ranking thresholds.",
-      icon: "speed",
-      color: "#fbbf24",
-      tint: "rgba(251,191,36,.10)",
-      edge: "rgba(251,191,36,.22)",
-    },
-    {
-      num: "04",
-      title: "Form Safety & Boundaries",
+      icon: "speed", color: "#facc15", tint: "rgba(250,204,21,.08)", edge: "rgba(250,204,21,.2)" },
+    { num: "04", title: "Form Safety & Boundaries",
       desc: "Every input field tested with boundary, invalid, and international characters. Triply guarded against submission.",
-      icon: "forms",
-      color: "#f87171",
-      tint: "rgba(248,113,113,.10)",
-      edge: "rgba(248,113,113,.22)",
-    },
-    {
-      num: "05",
-      title: "AI Answer Readiness",
+      icon: "forms", color: "#f0526a", tint: "rgba(240,82,106,.08)", edge: "rgba(240,82,106,.22)" },
+    { num: "05", title: "AI Answer Readiness",
       desc: "Multimodal AI evaluation checking whether generative answer engines can accurately cite product claims.",
-      icon: "answer",
-      color: "#34d399",
-      tint: "rgba(52,211,153,.10)",
-      edge: "rgba(52,211,153,.22)",
-    },
+      icon: "answer", color: "#34d399", tint: "rgba(52,211,153,.08)", edge: "rgba(52,211,153,.22)" },
   ];
 
   const STEPS = [
-    {
-      num: "01",
-      title: "Target Verification",
-      desc: "Submit a public URL. The scanner first inspects robots.txt under a strict fail-closed policy before accessing the page.",
-    },
-    {
-      num: "02",
-      title: "Headless Pipeline Execution",
-      desc: "Five specialized agents execute in sequence, streaming real-time diagnostic telemetry and screenshot previews via SSE.",
-    },
-    {
-      num: "03",
-      title: "Synthesis & Artifact Delivery",
-      desc: "Deduplicated findings, Core Web Vitals grades, and executive summaries are compiled into structured JSON and an A4 PDF.",
-    },
+    { num: "01", title: "Target verification",
+      desc: "Submit a public URL. The scanner first inspects robots.txt under a strict fail-closed policy before accessing the page." },
+    { num: "02", title: "Headless pipeline",
+      desc: "Five specialized stages execute in sequence, streaming live telemetry and screenshot previews over SSE." },
+    { num: "03", title: "Synthesis & delivery",
+      desc: "Deduplicated findings, Core Web Vitals grades, and an executive summary compile into structured JSON and an A4 PDF." },
   ];
 
   const FACTS = [
-    {
-      title: "Fail-Closed robots.txt Policy",
-      desc: "robots.txt is verified before any page access. If denied or unreachable, the scan terminates immediately.",
-    },
-    {
-      title: "Absolute Zero-Submit Guarantee",
-      desc: "submit/requestSubmit are stubbed, a capture-phase listener cancels submit events, and network aborts non-GET requests.",
-    },
-    {
-      title: "Single-Page Target Isolation",
-      desc: "Only the exact URL provided is inspected. The engine never crawls or traverses outbound links.",
-    },
-    {
-      title: "Strict 2-Hour Ephemeral Storage",
-      desc: "All generated screenshots, reports, and job records are purged automatically via TTL sweeps after 2 hours.",
-    },
+    { title: "Fail-closed robots.txt",
+      desc: "robots.txt is verified before any page access. If denied or unreachable, the scan terminates immediately." },
+    { title: "Zero-submit guarantee",
+      desc: "submit/requestSubmit are stubbed, a capture-phase listener cancels submit events, and the network layer aborts non-GET requests." },
+    { title: "Single-page isolation",
+      desc: "Only the exact URL provided is inspected. The engine never crawls or traverses outbound links." },
+    { title: "2-hour ephemeral storage",
+      desc: "All screenshots, reports, and job records are purged automatically via TTL sweeps after two hours." },
   ];
 
   const STAGE_ORDER = [
@@ -128,26 +84,75 @@
   const STAGE_LABELS = Object.fromEntries(STAGE_ORDER.map((r) => [r[0], r[1]]));
 
   const SEV_COLOR = {
-    critical: "#ef4444",
-    high: "#f97316",
-    medium: "#eab308",
-    low: "#3b82f6",
-    info: "#71717a",
+    critical: "#f0526a",
+    high: "#fb923c",
+    medium: "#facc15",
+    low: "#60a5fa",
+    info: "#7b7f88",
   };
 
-  /* ─── Render Landing Content ─────────────────────────────────────────── */
+  /* ─── Ambient interactions ────────────────────────────────────────────── */
+  function initReveal() {
+    const nodes = document.querySelectorAll("[data-reveal]");
+    if (REDUCED.matches || !("IntersectionObserver" in window)) {
+      nodes.forEach((n) => n.classList.add("in"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
+    );
+    nodes.forEach((n, i) => {
+      if (n.closest(".hero")) n.style.setProperty("--d", `${Math.min(i * 90, 450)}ms`);
+      io.observe(n);
+    });
+  }
+
+  function initSpotlight() {
+    if (REDUCED.matches || !window.matchMedia("(pointer: fine)").matches) return;
+    document.addEventListener("pointermove", (e) => {
+      const card = e.target.closest && e.target.closest(".spot");
+      if (!card) return;
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+      card.style.setProperty("--my", `${e.clientY - rect.top}px`);
+    }, { passive: true });
+  }
+
+  function initTicker() {
+    const inner = $("tickerInner");
+    if (!inner) return;
+    // Duplicate content for a seamless -50% loop.
+    const clone = inner.innerHTML;
+    const dup = document.createElement("div");
+    dup.setAttribute("aria-hidden", "true");
+    dup.style.display = "contents";
+    dup.innerHTML = clone;
+    inner.append(...dup.childNodes);
+  }
+
+  /* ─── Landing content ─────────────────────────────────────────────────── */
   function renderChecks() {
     const host = $("checkList");
     if (!host) return;
     host.innerHTML = "";
-    CHECKS.forEach((c) => {
-      const card = el("article", "cap-card");
+    CHECKS.forEach((c, i) => {
+      const card = el("article", "cap-card spot");
       card.style.setProperty("--cap-color", c.color);
       card.style.setProperty("--cap-tint", c.tint);
       card.style.setProperty("--cap-edge", c.edge);
+      card.setAttribute("data-reveal", "");
+      card.style.setProperty("--d", `${(i % 3) * 80}ms`);
       card.innerHTML = `
         <span class="cap-num mono">${c.num}</span>
-        <div class="cap-icon">${svg(ICONS[c.icon], 18)}</div>
+        <div class="cap-icon">${svg(ICONS[c.icon], 19)}</div>
         <h3>${esc(c.title)}</h3>
         <p>${esc(c.desc)}</p>
       `;
@@ -159,8 +164,10 @@
     const host = $("stepList");
     if (!host) return;
     host.innerHTML = "";
-    STEPS.forEach((s) => {
+    STEPS.forEach((s, i) => {
       const card = el("div", "flow-card");
+      card.setAttribute("data-reveal", "");
+      card.style.setProperty("--d", `${i * 100}ms`);
       card.innerHTML = `
         <span class="flow-num mono">${s.num}</span>
         <h3>${esc(s.title)}</h3>
@@ -174,8 +181,10 @@
     const host = $("factList");
     if (!host) return;
     host.innerHTML = "";
-    FACTS.forEach((f) => {
+    FACTS.forEach((f, i) => {
       const item = el("div", "safety-item");
+      item.setAttribute("data-reveal", "");
+      item.style.setProperty("--d", `${(i % 2) * 90}ms`);
       item.innerHTML = `
         <span class="safety-check">${svg(ICONS.check, 12)}</span>
         <dl>
@@ -187,37 +196,63 @@
     });
   }
 
-  /* ─── View Routing ────────────────────────────────────────────────────── */
+  /* ─── View routing ────────────────────────────────────────────────────── */
   function show(viewName) {
-    const views = ["landing", "progress", "results", "error"];
-    views.forEach((name) => {
+    ["landing", "progress", "results", "error"].forEach((name) => {
       const node = $("view-" + name);
       if (!node) return;
       const isActive = name === viewName;
       node.classList.toggle("is-active", isActive);
       node.hidden = !isActive;
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: REDUCED.matches ? "auto" : "smooth" });
   }
 
-  /* ─── Health Check ────────────────────────────────────────────────────── */
+  /* ─── Engine health → nav status ──────────────────────────────────────── */
   async function checkHealth() {
+    const status = $("navStatus");
     try {
       const res = await fetch(url_("/api/health"));
-      if (!res.ok) return;
+      if (!res.ok) throw new Error("unhealthy");
       const data = await res.json();
+      if (status) {
+        status.classList.add("ok");
+        const text = status.querySelector(".status-text");
+        if (text) text.textContent = "engine online";
+      }
       if (!data.ai_enabled) {
         const help = $("urlHelp");
         if (help) {
-          help.textContent = "Read-only scan · robots.txt respected · forms never submitted (AI layer disabled on this instance)";
+          help.textContent = "Read-only scan · robots.txt fail-closed · forms never submitted (AI layer disabled on this instance)";
         }
       }
     } catch {
-      /* non-critical check */
+      if (status) {
+        status.classList.add("down");
+        const text = status.querySelector(".status-text");
+        if (text) text.textContent = "engine offline";
+      }
     }
   }
 
-  /* ─── Progress Management ─────────────────────────────────────────────── */
+  /* ─── Dial + progress beam ────────────────────────────────────────────── */
+  const DIAL_C = 326.7256;
+
+  function setProgress(pct) {
+    const clamped = Math.max(0, Math.min(100, pct));
+    const dialFill = $("dialFill");
+    if (dialFill) dialFill.style.strokeDashoffset = String(DIAL_C * (1 - clamped / 100));
+    const dialPct = $("dialPct");
+    if (dialPct) dialPct.textContent = String(Math.round(clamped));
+    const dial = $("dial");
+    if (dial) dial.setAttribute("aria-valuenow", String(Math.round(clamped)));
+    const barFill = $("barFill");
+    if (barFill) barFill.style.width = `${clamped}%`;
+    const barGlow = $("barGlow");
+    if (barGlow) barGlow.style.width = `${clamped}%`;
+  }
+
+  /* ─── Progress management ─────────────────────────────────────────────── */
   function renderRail() {
     const rail = $("stageList");
     if (!rail) return;
@@ -255,7 +290,7 @@
 
     const detail = row.querySelector(".stage-detail");
     if (detail) {
-      detail.textContent = event.detail || (event.status === "running" ? "in progress..." : detail.textContent);
+      detail.textContent = event.detail || (event.status === "running" ? "in progress…" : detail.textContent);
     }
 
     const time = row.querySelector(".stage-time");
@@ -266,14 +301,7 @@
     const settled = document.querySelectorAll(
       '.stage-item[data-status="ok"], .stage-item[data-status="failed"], .stage-item[data-status="degraded"]'
     ).length;
-    const pct = Math.min(99, Math.round((settled / STAGE_ORDER.length) * 100));
-
-    const barFill = $("barFill");
-    const barGlow = $("barGlow");
-    const barTrack = $("barTrack");
-    if (barFill) barFill.style.width = `${pct}%`;
-    if (barGlow) barGlow.style.width = `${pct}%`;
-    if (barTrack) barTrack.setAttribute("aria-valuenow", String(pct));
+    setProgress(Math.min(99, Math.round((settled / STAGE_ORDER.length) * 100)));
 
     const liveStages = $("liveStages");
     if (liveStages) liveStages.textContent = `${settled} / ${STAGE_ORDER.length}`;
@@ -298,7 +326,13 @@
     const box = $("console");
     if (!box) return;
     const ts = new Date().toLocaleTimeString([], { hour12: false });
-    box.append(document.createTextNode(`[${ts}] ${message}\n`));
+    const tsNode = el("span", "log-ts", `[${ts}] `);
+    const msgNode = el("span", "log-msg", message);
+    const tone = /✗|fail|error|refus|denied/i.test(message) ? "err"
+      : /degrad|warn|fallback/i.test(message) ? "warn"
+      : /✓|\bok\b|complete|verified|captured/i.test(message) ? "ok" : "";
+    if (tone) msgNode.classList.add(tone);
+    box.append(tsNode, msgNode, document.createTextNode("\n"));
     box.scrollTop = box.scrollHeight;
   }
 
@@ -314,9 +348,12 @@
       img.removeAttribute("src");
     }
     const empty = $("previewEmpty");
-    if (empty) empty.textContent = "Awaiting first capture";
+    if (empty) {
+      const s = empty.querySelector("span");
+      if (s) s.textContent = "Awaiting first capture";
+    }
     const badge = $("previewBadge");
-    if (badge) badge.textContent = "queued";
+    if (badge) badge.lastChild.textContent = "queued";
     const meta = $("previewMeta");
     if (meta) meta.textContent = "desktop · 1440px";
     previewLoaded = false;
@@ -335,7 +372,7 @@
       const frame = $("previewFrame");
       if (frame) frame.classList.add("ready");
       const badge = $("previewBadge");
-      if (badge) badge.textContent = "captured";
+      if (badge) badge.lastChild.textContent = "captured";
       const meta = $("previewMeta");
       if (meta) {
         const count = viewports && viewports.length ? viewports.length : 1;
@@ -345,7 +382,10 @@
     probe.onerror = () => {
       previewLoaded = false;
       const empty = $("previewEmpty");
-      if (empty) empty.textContent = "Preview unavailable";
+      if (empty) {
+        const s = empty.querySelector("span");
+        if (s) s.textContent = "Preview unavailable";
+      }
     };
     probe.src = url_(`/api/scan/${activeScanId}/shot/desktop.jpg?t=${Date.now()}`);
   }
@@ -356,17 +396,17 @@
     clearInterval(timer);
     timer = setInterval(() => {
       const s = Math.floor((Date.now() - t0) / 1000);
-      const m = Math.floor(s / 60);
+      const m = String(Math.floor(s / 60)).padStart(2, "0");
       const sec = String(s % 60).padStart(2, "0");
       const elap = $("elapsed");
       if (elap) elap.textContent = `${m}:${sec}`;
     }, 1000);
   }
 
-  /* ─── Animated Counter ────────────────────────────────────────────────── */
-  function countUp(node, value, duration = 500) {
+  /* ─── Animated counter ────────────────────────────────────────────────── */
+  function countUp(node, value, duration = 600) {
     if (!node) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (REDUCED.matches) {
       node.textContent = String(value);
       return;
     }
@@ -380,7 +420,7 @@
     requestAnimationFrame(tick);
   }
 
-  /* ─── Results Rendering ───────────────────────────────────────────────── */
+  /* ─── Results rendering ───────────────────────────────────────────────── */
   function renderKPI(count, label, severityClass) {
     const card = el("div", `kpi ${severityClass}`);
     const val = el("div", "kpi-value", "0");
@@ -396,7 +436,7 @@
     host.innerHTML = "";
     const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
 
-    host.append(el("div", "mix-title mono", "Severity Distribution"));
+    host.append(el("div", "mix-title mono", "Severity distribution"));
 
     const bar = el("div", "mix-bar");
     const legend = el("div", "mix-legend mono");
@@ -407,12 +447,14 @@
       const seg = el("span");
       seg.style.width = `${(value / total) * 100}%`;
       seg.style.background = SEV_COLOR[sev];
+      seg.style.color = SEV_COLOR[sev];
       bar.append(seg);
 
       const item = el("span");
       const dot = el("i");
       dot.style.background = SEV_COLOR[sev];
-      item.append(dot, document.createTextNode(`${sev}: ${value}`));
+      dot.style.color = SEV_COLOR[sev];
+      item.append(dot, document.createTextNode(`${sev} · ${value}`));
       legend.append(item);
     });
 
@@ -429,8 +471,7 @@
         : unit === ""
         ? Number(value).toFixed(2)
         : `${Math.round(value)}${unit}`;
-      const valNode = el("div", "vital-value", shown);
-      card.append(valNode);
+      card.append(el("div", "vital-value", shown));
       if (thresholds) {
         card.classList.add(value > thresholds[1] ? "bad" : value > thresholds[0] ? "warn" : "good");
       }
@@ -473,14 +514,22 @@
 
     shots.forEach((shot) => {
       const fig = el("figure", "shot");
+      fig.tabIndex = 0;
+      fig.setAttribute("role", "button");
+      fig.setAttribute("aria-label", `Open ${shot.viewport} capture full size`);
       const img = el("img");
       img.src = url_(`/api/scan/${scanId}/shot/${shot.viewport}.jpg`);
       img.alt = `${shot.viewport} viewport capture (${shot.width}x${shot.height})`;
       img.loading = "lazy";
 
-      // Click opens full-resolution lightbox
-      fig.addEventListener("click", () => {
-        openLightbox(url_(`/api/scan/${scanId}/shot/${shot.viewport}.png`), img.alt);
+      const open = () =>
+        openLightbox(url_(`/api/scan/${scanId}/shot/${shot.viewport}.png`), img.alt, fig);
+      fig.addEventListener("click", open);
+      fig.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          open();
+        }
       });
 
       const cap = el("figcaption");
@@ -496,25 +545,34 @@
     });
   }
 
-  /* ─── Lightbox ────────────────────────────────────────────────────────── */
-  function openLightbox(src, alt) {
+  /* ─── Lightbox (focus-managed) ────────────────────────────────────────── */
+  let lightboxTrigger = null;
+
+  function openLightbox(src, alt, trigger) {
     const lb = $("lightbox");
     const img = $("lightboxImg");
     if (!lb || !img) return;
+    lightboxTrigger = trigger || null;
     img.src = src;
     img.alt = alt || "";
     lb.hidden = false;
     document.body.style.overflow = "hidden";
+    const closeBtn = lb.querySelector(".lightbox-close");
+    if (closeBtn) closeBtn.focus();
   }
 
   function closeLightbox() {
     const lb = $("lightbox");
-    if (!lb) return;
+    if (!lb || lb.hidden) return;
     lb.hidden = true;
     document.body.style.overflow = "";
+    if (lightboxTrigger && document.contains(lightboxTrigger)) {
+      lightboxTrigger.focus();
+    }
+    lightboxTrigger = null;
   }
 
-  /* ─── Findings Presentation ───────────────────────────────────────────── */
+  /* ─── Findings ────────────────────────────────────────────────────────── */
   let currentResult = null;
   let activeFilter = "all";
 
@@ -548,7 +606,7 @@
     }
     if (f.recommendation) {
       const rec = el("p", "f-rec");
-      rec.append(el("strong", null, "Fix: "));
+      rec.append(el("strong", null, "Fix — "));
       rec.append(document.createTextNode(f.recommendation));
       body.append(rec);
     }
@@ -590,7 +648,7 @@
     });
 
     options.forEach(([key, label, count]) => {
-      const btn = el("button", null, `${label} (${count})`);
+      const btn = el("button", null, `${label} · ${count}`);
       btn.type = "button";
       btn.setAttribute("aria-pressed", String(activeFilter === key));
       btn.addEventListener("click", () => {
@@ -620,20 +678,17 @@
     const jsonBtn = $("jsonBtn");
     if (jsonBtn) jsonBtn.href = url_(`/api/scan/${r.scan_id}/report.json`);
 
-    // KPI cards
     const stats = $("stats");
     if (stats) {
       stats.innerHTML = "";
       stats.append(renderKPI(counts.critical || 0, "Critical", "critical"));
       stats.append(renderKPI(counts.high || 0, "High", "high"));
       stats.append(renderKPI(counts.medium || 0, "Medium", "medium"));
-      stats.append(renderKPI(total, "Total Findings", "total"));
+      stats.append(renderKPI(total, "Total findings", "total"));
     }
 
-    // Severity mix bar
     renderMix(counts);
 
-    // Summary & top risks
     const sumNode = $("summary");
     if (sumNode) sumNode.textContent = r.executive_summary || "No executive summary available.";
 
@@ -643,30 +698,25 @@
       (r.top_risks || []).forEach((risk) => risksList.append(el("li", null, risk)));
     }
 
-    // Vitals
     renderVitals(r.vitals);
 
-    // Stages
     const stagesNode = $("stageSummary");
     if (stagesNode) {
       stagesNode.innerHTML = "";
       (r.stages || []).forEach((s) => {
         const row = el("div", "stage-row");
         row.append(el("span", null, STAGE_LABELS[s.key] || s.label));
-        row.append(el("span", `stage-status ${s.status}`, `${s.status} (${s.elapsed_seconds}s)`));
+        row.append(el("span", `stage-status ${s.status}`, `${s.status} · ${s.elapsed_seconds}s`));
         stagesNode.append(row);
       });
     }
 
-    // Gallery
     renderGallery(r.screenshots, r.scan_id);
 
-    // Findings
     activeFilter = "all";
     renderFilters(counts);
     renderFindings();
 
-    // Safety record
     const s = r.safety || {};
     const recordNode = $("safetyList");
     if (recordNode) {
@@ -682,7 +732,7 @@
     show("results");
   }
 
-  /* ─── Scan Execution ──────────────────────────────────────────────────── */
+  /* ─── Scan execution ──────────────────────────────────────────────────── */
   let activeEventSource = null;
 
   function setScanButtonState(loading) {
@@ -692,7 +742,7 @@
     const label = btn.querySelector(".scan-btn-label");
     const spinner = btn.querySelector(".scan-btn-spinner");
     const arrow = btn.querySelector(".scan-btn-arrow");
-    if (label) label.textContent = loading ? "Starting..." : "Analyze";
+    if (label) label.textContent = loading ? "Starting…" : "Run scan";
     if (spinner) spinner.hidden = !loading;
     if (arrow) arrow.hidden = loading;
   }
@@ -719,24 +769,17 @@
     const consoleBox = $("console");
     if (consoleBox) consoleBox.textContent = "";
 
-    const progUrl = $("progressUrl");
-    if (progUrl) progUrl.textContent = targetUrl;
     const progTitle = $("progressTitle");
     if (progTitle) progTitle.textContent = targetUrl;
 
-    const barFill = $("barFill");
-    if (barFill) barFill.style.width = "3%";
-    const barGlow = $("barGlow");
-    if (barGlow) barGlow.style.width = "3%";
-    const barTrack = $("barTrack");
-    if (barTrack) barTrack.setAttribute("aria-valuenow", "3");
+    setProgress(3);
 
     const liveFind = $("liveFindings");
     if (liveFind) liveFind.textContent = "0";
     const liveStg = $("liveStages");
     if (liveStg) liveStg.textContent = `0 / ${STAGE_ORDER.length}`;
     const liveAct = $("liveActivity");
-    if (liveAct) liveAct.textContent = "initializing...";
+    if (liveAct) liveAct.textContent = "initializing…";
 
     liveIssues = 0;
     resetPreview();
@@ -779,12 +822,11 @@
       } else if (event.type === "robots") {
         const liveAct = $("liveActivity");
         if (liveAct) liveAct.textContent = "robots.txt verified";
+        logLine("robots.txt verified — fail-closed policy passed");
       } else if (event.type === "preflight") {
         logLine(event.message);
       } else if (event.type === "done") {
-        if (barFill) barFill.style.width = "100%";
-        if (barGlow) barGlow.style.width = "100%";
-        if (barTrack) barTrack.setAttribute("aria-valuenow", "100");
+        setProgress(100);
 
         if (activeEventSource) {
           activeEventSource.close();
@@ -792,7 +834,8 @@
         }
         clearInterval(timer);
         setScanButtonState(false);
-        renderResults(event);
+        // Brief pause so the dial reads 100% before the workspace appears.
+        setTimeout(() => renderResults(event), REDUCED.matches ? 0 : 450);
       } else if (event.type === "error") {
         setScanButtonState(false);
         showError(event.message);
@@ -806,7 +849,6 @@
       clearInterval(timer);
       setScanButtonState(false);
 
-      // Attempt recovery poll
       fetch(url_(`/api/scan/${scanId}`))
         .then((r) => r.json())
         .then((job) => {
@@ -820,14 +862,16 @@
     };
   }
 
-  /* ─── DOM Event Listeners ─────────────────────────────────────────────── */
+  /* ─── Boot ────────────────────────────────────────────────────────────── */
   document.addEventListener("DOMContentLoaded", () => {
     renderChecks();
     renderSteps();
     renderFacts();
+    initReveal();
+    initSpotlight();
+    initTicker();
     checkHealth();
 
-    // Form submit
     const scanForm = $("scanForm");
     if (scanForm) {
       scanForm.addEventListener("submit", (e) => {
@@ -847,7 +891,6 @@
       });
     }
 
-    // Cancel / Retry / Again
     ["cancelBtn", "errorRetry", "againBtn"].forEach((id) => {
       const btn = $(id);
       if (!btn) return;
@@ -864,7 +907,6 @@
       });
     });
 
-    // Lightbox close handlers
     const lb = $("lightbox");
     if (lb) {
       lb.addEventListener("click", (e) => {
@@ -880,7 +922,6 @@
       }
     });
 
-    // URL parameter auto-trigger (?url=...)
     const params = new URLSearchParams(window.location.search);
     const paramUrl = params.get("url");
     if (paramUrl) {

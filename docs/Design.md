@@ -5,7 +5,14 @@ the **A4 PDF report**.
 
 ## Direction
 
-Dark engineering-lab diagnostic instrument. The interface balances high-density information architecture with precision typography and purposeful color: dark canvas (`#09090b`), high-contrast text hierarchy (`#e4e4e8`), hairline borders (`rgba(255,255,255,.08)`), and color reserved strictly for state and severity (`critical: #ef4444`, `high: #f97316`, `medium: #eab308`, `low: #3b82f6`, `ok: #22c55e`).
+Precision diagnostic instrument — the "Instrument v2" system. Deep-space canvas
+(`#050507`), editorial typography (**Space Grotesk** display × **Instrument Serif**
+italic accents × **Inter** body × **JetBrains Mono** data), animated film grain, a soft
+radar sweep behind the hero (the sentinel motif), hairline rules, corner-tick brackets
+on instrument panels, mouse-tracked spotlight glow on capability cards, and a seamless
+mono ticker of capability terms. Color is reserved for meaning: one signal-violet →
+ice-cyan accent gradient for action, and the severity palette (`critical: #f0526a`,
+`high: #fb923c`, `medium: #facc15`, `low: #60a5fa`, `ok: #34d399`) for findings. The interface balances high-density information architecture with precision typography and purposeful color: dark canvas (`#09090b`), high-contrast text hierarchy (`#e4e4e8`), hairline borders (`rgba(255,255,255,.08)`), and color reserved strictly for state and severity (`critical: #ef4444`, `high: #f97316`, `medium: #eab308`, `low: #3b82f6`, `ok: #22c55e`).
 
 No generic AI SaaS templates, no lorem ipsum, and no decorative features that don't perform work. Implementation details are kept out of marketing copy. The landing page acts as an instrument console; during a scan, live SSE progress and screenshot captures stream directly into the live preview pane.
 
@@ -13,14 +20,14 @@ No generic AI SaaS templates, no lorem ipsum, and no decorative features that do
 
 | Token | Value | Use |
 |---|---|---|
-| `--bg` / `--bg-2` | `#09090b` / `#0f0f13` | deep canvas background |
-| `--surface` / `--surface-2` | `#141418` / `#1a1a20` | panels, cards, inputs |
-| `--text` / `--text-2` / `--text-3` | `#e4e4e8` / `#a1a1aa` / `#71717a` | headings, body, labels & meta |
+| `--bg` / `--bg-2` | `#050507` / `#0a0a0e` | deep-space canvas |
+| `--surface` / `--surface-2` | `#0e0e13` / `#131319` | panels, cards, inputs |
+| `--text` / `--text-2` / `--text-3` | `#eceef2` / `#9ba1ab` / `#63676f` | headings, body, labels & meta |
 | `--border` / `--border-2` | `rgba(255,255,255,.08)` / `rgba(255,255,255,.12)` | precision hairline borders |
-| `--accent` / `--grad` | `#818cf8` / `linear-gradient(135deg, #6366f1, #818cf8, #22d3ee)` | primary brand gradient |
-| `--sev-critical` `--sev-high` `--sev-medium` `--sev-low` `--sev-ok` | `#ef4444` `#f97316` `#eab308` `#3b82f6` `#22c55e` | severity, shared across web & PDF |
+| `--accent` / `--grad` | `#8b8ff8` / `linear-gradient(120deg, #6366f1, #8b8ff8, #67e8f9)` | signal gradient, action only |
+| `--sev-critical` `--sev-high` `--sev-medium` `--sev-low` `--sev-ok` | `#f0526a` `#fb923c` `#facc15` `#60a5fa` `#34d399` | severity, shared across web & PDF |
 
-**Inter** for all structural typography; **JetBrains Mono** for machine-generated data — URLs, timestamps, metrics, IDs, code snippets. Border radii are restrained (6–14px) to retain an engineering instrument aesthetic.
+**Space Grotesk** for display and headings, **Instrument Serif** italic for one accent phrase per headline, **Inter** for body, **JetBrains Mono** for machine-generated data — URLs, timestamps, metrics, IDs, code snippets. Border radii 6–16px; panels carry corner-tick brackets (`.ticks`) and capability cards a pointer-tracked radial spotlight (`.spot`).
 
 
 The palette is not invented. It is the pattern that holds across the reference set used to
@@ -30,31 +37,39 @@ Gallery, mapcn, Minimal Gallery all sit in the same neutral range).
 ## Layout
 
 * 1080px measure, 60px sticky header with a single hairline.
-* Hero is left-aligned, max 760px, one headline, one sentence, one input row, one line of
-  plain reassurance. No badge, no chip row, no scroll cue.
+* Hero is centered: status eyebrow, a two-line display headline with a serif-italic gradient
+  accent, one sentence, the scan bar (beam-sweep primary button), one mono reassurance line,
+  and a four-cell spec strip (stages / viewports / standard / submits). A blurred radar sweep
+  rotates behind the headline. Below the hero, a seamless mono ticker lists capabilities —
+  never vendor names.
 * Sections are separated by 104px of space and a hairline, each with a small uppercase
   label rather than a decorated heading.
-* "What it checks" is a five-row definition list (index · name · description) — a table is
-  the honest shape for a list of checks.
+* "What it checks" is a five-card grid with per-check accent edge, icon chip and index — each
+  card carries the mouse-tracked spotlight.
 * Safety is a 2×2 bordered grid of four one-line claims.
 * The report section pairs the real PDF cover with four short bullets.
 
 ## Motion
 
-Kept, because each one communicates state or craft:
+Each effect communicates state or craft, and everything collapses under
+`prefers-reduced-motion`:
 
 | Effect | Where | Why |
 |---|---|---|
-| Hover lift on the primary button | all views | affordance |
-| Progress fill + blinking rail marker | progress | which stage is running |
-| Live capture preview with a slow sweep line | progress | the target page, as it is captured |
+| Staggered hero reveal | landing | orientation, once |
+| Radar sweep | hero | the sentinel motif — slow, blurred, ambient |
+| Seamless capability ticker | landing | momentum; pauses on hover |
+| Pointer-tracked spotlight | capability cards | tactility (fine pointers only) |
+| Beam sweep on primary button | landing + results | affordance |
+| SVG progress dial + glow beam | progress | exact pipeline completion |
+| Blinking rail marker + accent edge on the running stage | progress | which stage is live |
+| Live capture preview with scanline | progress | the target page, as it is captured |
+| Colored telemetry terminal | progress | ok / warn / error at a glance |
 | Rolling counters | progress + results | numbers land instead of appearing |
+| Severity beam draw-in | results | the mix at a glance |
 | Section reveal on scroll | landing | orientation, once, subtle |
-| Staggered finding entrance | results | shows the list is fresh |
 
-Everything above collapses under `prefers-reduced-motion`.
-
-## States
+## States## States
 
 Loading (hero → progress), empty ("Nothing in this run met a reporting threshold"), degraded
 (a stage marked `~` with the engine's own reason in its detail line), error (a panel with the
@@ -83,3 +98,5 @@ A4, rendered by Chromium's print pipeline from HTML + CSS.
 Pillow generates the thumbnails that get embedded, keeping the PDF near 0.5 MB with three
 full-page captures inside it. The report stays dark on purpose: it is a document, and it is
 the one surface where a coloured cover carries meaning.
+
+
