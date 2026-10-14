@@ -3,27 +3,30 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SiteSentinel — Precision Website QA Scanner</title>
+<title>Caliber — Precision Website QA Scanner</title>
 <meta name="description" content="Paste a URL and get a full QA report: layout, accessibility, performance, forms, and AI-answer readiness. Read-only scanning, robots.txt respected, forms never submitted." />
-<meta name="theme-color" content="#050507" />
+<meta name="theme-color" content="#0A0A08" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,700;9..144,1,700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
 <script>document.documentElement.classList.add("js");</script>
-<link rel="stylesheet" href="/app.css?v=2" />
+<link rel="stylesheet" href="/app.css?v=4" />
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+<div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 
 <header class="nav" role="banner">
   <div class="wrap nav-inner">
-    <a class="wordmark" href="/" aria-label="SiteSentinel home">
+    <a class="wordmark" href="/" aria-label="Caliber home">
       <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="15" height="15"><circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 1.8v4M12 18.2v4M1.8 12h4M18.2 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>
+        <svg viewBox="0 0 24 24" width="15" height="15"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="2.1" fill="currentColor"/><path d="M7.5 7.5 9.2 9.2M16.5 16.5 14.8 14.8M7.5 16.5 9.2 14.8M16.5 7.5 14.8 9.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
       </span>
-      <span class="wordmark-text">SiteSentinel</span>
+      <span class="wordmark-text">Caliber</span>
     </a>
     <nav class="nav-links" aria-label="Sections">
       <a href="#capabilities">Capabilities</a>
@@ -31,117 +34,109 @@
       <a href="#safety">Safety</a>
       <a href="#report">Report</a>
     </nav>
-    <div class="nav-status mono" id="navStatus" role="status">
-      <span class="status-dot" aria-hidden="true"></span>
-      <span class="status-text">engine&hellip;</span>
-    </div>
   </div>
 </header>
 
 <main id="main">
 
-  <!-- ═══════════════════════════════ LANDING ═══════════════════════════════ -->
+  <!-- ======================== LANDING ======================== -->
   <section id="view-landing" class="view is-active" aria-label="Landing page">
-    <div class="hero-bg" aria-hidden="true">
-      <div class="grid-lines"></div>
-      <div class="glow glow-a"></div>
-      <div class="glow glow-b"></div>
-      <div class="radar"></div>
-    </div>
 
-    <div class="wrap hero">
-      <div class="hero-badge" data-reveal>
-        <span class="pulse" aria-hidden="true"></span>
-        <span class="mono">Autonomous QA instrument</span>
-      </div>
+    <!-- HERO -->
+    <div class="hero">
+      <canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-vignette" aria-hidden="true"></div>
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-content wrap">
+        <h1 class="hero-title" data-reveal>
+          <span class="line line-1">Every pixel.</span>
+          <span class="line line-2">Every rule. <em>Accounted for.</em></span>
+        </h1>
 
-      <h1 class="hero-title">
-        <span class="line" data-reveal>Every pixel. Every rule.</span>
-        <span class="line hero-accent" data-reveal>Accounted&nbsp;for.</span>
-      </h1>
+        <p class="hero-sub" data-reveal>
+          Layout, accessibility, performance, forms and AI-answer readiness —
+          interrogated by four headless agents and returned as one executive report.
+        </p>
 
-      <p class="hero-sub" data-reveal>
-        Layout, accessibility, performance, forms and AI-answer readiness —
-        interrogated by four headless agents and returned as one executive report.
-      </p>
+        <form id="scanForm" class="scan-bar" data-reveal novalidate>
+          <div class="scan-field">
+            <svg class="scan-icon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17ZM2.5 10h15m-4.9-7.2c1.1 1.8 1.8 4.5 1.8 7.2s-.7 5.4-1.8 7.2m-5.2 0C6.3 15.4 5.6 12.7 5.6 10s.7-5.4 1.8-7.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <label class="sr-only" for="url">Website URL</label>
+            <input id="url" name="url" type="text" inputmode="url" autocomplete="url" spellcheck="false" placeholder="paste a URL — example.com" required />
+          </div>
+          <button id="scanBtn" class="scan-btn" type="submit" data-magnetic>
+            <span class="scan-btn-beam" aria-hidden="true"></span>
+            <span class="scan-btn-label">Run scan</span>
+            <svg class="scan-btn-arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8h9m0 0L8.5 4.5M12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="scan-btn-spinner" aria-hidden="true" hidden>
+              <svg viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="32" stroke-dashoffset="10" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="0 8 8;360 8 8" dur="0.8s" repeatCount="indefinite"/></circle></svg>
+            </span>
+          </button>
+        </form>
 
-      <form id="scanForm" class="scan-bar" data-reveal novalidate>
-        <div class="scan-field">
-          <svg class="scan-icon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17ZM2.5 10h15m-4.9-7.2c1.1 1.8 1.8 4.5 1.8 7.2s-.7 5.4-1.8 7.2m-5.2 0C6.3 15.4 5.6 12.7 5.6 10s.7-5.4 1.8-7.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-          <label class="sr-only" for="url">Website URL</label>
-          <input id="url" name="url" type="text" inputmode="url" autocomplete="url" spellcheck="false"
-                 placeholder="paste a URL — example.com" aria-describedby="urlHelp" required />
+        <div id="landingError" class="alert" role="alert" hidden></div>
+
+        <dl class="hero-stats mono" data-reveal aria-label="Scanner specification">
+          <div><dt>Stages</dt><dd>05</dd></div>
+          <div><dt>Viewports</dt><dd>03</dd></div>
+          <div><dt>Standard</dt><dd>WCAG 2.2</dd></div>
+          <div><dt>Submits</dt><dd>00</dd></div>
+        </dl>
+
+        <div class="hero-hint mono" data-reveal aria-hidden="true">
+          <span>drag to inspect</span>
+          <svg viewBox="0 0 16 16" width="12" height="12"><path d="M3 8h10M8 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <button id="scanBtn" class="scan-btn" type="submit">
-          <span class="scan-btn-beam" aria-hidden="true"></span>
-          <span class="scan-btn-label">Run scan</span>
-          <svg class="scan-btn-arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8h9m0 0L8.5 4.5M12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="scan-btn-spinner" aria-hidden="true" hidden>
-            <svg viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="32" stroke-dashoffset="10" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="0 8 8;360 8 8" dur="0.8s" repeatCount="indefinite"/></circle></svg>
-          </span>
-        </button>
-      </form>
-
-      <p id="urlHelp" class="hero-fine mono" data-reveal>
-        <span class="fine-dot" aria-hidden="true"></span> Read-only scan
-        <span class="fine-sep" aria-hidden="true">/</span> robots.txt fail-closed
-        <span class="fine-sep" aria-hidden="true">/</span> forms never submitted
-        <span class="fine-sep" aria-hidden="true">/</span> ~2 min
-      </p>
-      <div id="landingError" class="alert" role="alert" hidden></div>
-
-      <dl class="hero-stats mono" data-reveal aria-label="Scanner specification">
-        <div><dt>Stages</dt><dd>05</dd></div>
-        <div><dt>Viewports</dt><dd>03</dd></div>
-        <div><dt>Standard</dt><dd>WCAG 2.2</dd></div>
-        <div><dt>Submits</dt><dd>00</dd></div>
-      </dl>
-    </div>
-
-    <div class="ticker" aria-hidden="true">
-      <div class="ticker-inner" id="tickerInner">
-        <span>WCAG 2.2 A/AA</span><span>Core Web Vitals</span><span>GEO/AEO readiness</span><span>robots fail-closed</span><span>zero-submit guarantee</span><span>deterministic finding IDs</span><span>A4 report</span><span>structured JSON</span><span>1.5s throttle</span><span>SSRF guard</span><span>three viewports</span><span>nothing stored</span>
       </div>
     </div>
 
-    <!-- capabilities -->
+    <!-- CAPABILITIES -->
     <section id="capabilities" class="wrap section">
+      <div class="ghost-num" aria-hidden="true">01</div>
       <div class="section-head" data-reveal>
         <div class="section-rule"><span class="section-label mono">01 / Capabilities</span></div>
         <h2 class="section-title">What it checks — <span class="title-serif">every layer.</span></h2>
         <p class="section-sub">Every pass runs against the rendered page — real pixels, real DOM, real network — never the source code.</p>
       </div>
       <div class="cap-grid" id="checkList"></div>
+      <div class="section-hairline" aria-hidden="true"></div>
     </section>
 
-    <!-- how it works -->
+    <!-- HOW IT WORKS -->
     <section id="how" class="wrap section">
+      <div class="ghost-num" aria-hidden="true">02</div>
       <div class="section-head" data-reveal>
         <div class="section-rule"><span class="section-label mono">02 / Process</span></div>
         <h2 class="section-title">How it works, <span class="title-serif">URL to evidence.</span></h2>
+        <p class="section-sub">One URL in, one report out. No accounts, no installs — the pipeline streams live progress while it works.</p>
       </div>
       <div class="flow-grid" id="stepList"></div>
+      <div class="section-hairline" aria-hidden="true"></div>
     </section>
 
-    <!-- safety -->
+    <!-- SAFETY -->
     <section id="safety" class="wrap section">
+      <div class="ghost-num" aria-hidden="true">03</div>
       <div class="section-head" data-reveal>
         <div class="section-rule"><span class="section-label mono">03 / Safety</span></div>
-        <h2 class="section-title">Read-only <span class="title-serif">by construction.</span></h2>
+        <h2 class="section-title">Safety <span class="title-serif">by construction.</span></h2>
         <p class="section-sub">Not by promise — by architecture. There is no code path in the engine that can mutate your site.</p>
       </div>
       <div class="safety-grid" id="factList"></div>
+      <div class="section-hairline" aria-hidden="true"></div>
     </section>
 
-    <!-- report preview -->
+    <!-- REPORT -->
     <section id="report" class="wrap section">
+      <div class="ghost-num" aria-hidden="true">04</div>
       <div class="report-preview">
         <div class="report-art" data-reveal>
+          <div class="report-glow" aria-hidden="true"></div>
           <div class="report-frame report-frame-back">
             <img src="/img/pdf-findings.png" alt="" loading="lazy" width="595" height="842" aria-hidden="true" />
           </div>
           <div class="report-frame report-shot report-frame-front">
-            <img src="/img/pdf-cover.png" alt="Cover page of a generated SiteSentinel report" loading="lazy" width="595" height="842" />
+            <img src="/img/pdf-cover.png" alt="Cover page of a generated Caliber report" loading="lazy" width="595" height="842" />
           </div>
         </div>
         <div class="report-info" data-reveal>
@@ -155,12 +150,23 @@
             <li>Mobile, tablet, and desktop captures embedded</li>
             <li>Safety &amp; compliance statement with full audit trail</li>
           </ul>
+          <p class="mono report-fine">A4 · print-safe · deterministic · reproducible</p>
         </div>
       </div>
     </section>
+
+    <!-- BOTTOM CTA -->
+    <div class="wrap bottom-cta" data-reveal>
+      <div class="bottom-cta-inner">
+        <h2 class="bottom-cta-title">Ready to <em>see</em> your page?</h2>
+        <p class="bottom-cta-sub mono">Paste a URL — the instrument will do the rest.</p>
+        <a href="#" class="ghost-btn bottom-cta-btn" data-magnetic onclick="document.getElementById('url').focus(); return false;">Paste a URL above ↑</a>
+      </div>
+    </div>
+
   </section>
 
-  <!-- ═══════════════════════════════ PROGRESS ═══════════════════════════════ -->
+  <!-- ======================== PROGRESS ======================== -->
   <section id="view-progress" class="view" aria-labelledby="progressTitle" hidden>
     <div class="wrap">
       <div class="console ticks">
@@ -177,7 +183,7 @@
 
         <div class="dial-row">
           <div class="dial" id="dial" role="progressbar" aria-labelledby="progressTitle" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true"><defs><linearGradient id="dialGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#67e8f9"/></linearGradient></defs>
+            <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true"><defs><linearGradient id="dialGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF451A"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient></defs>
               <circle class="dial-track" cx="60" cy="60" r="52" />
               <circle class="dial-fill" id="dialFill" cx="60" cy="60" r="52" />
             </svg>
@@ -229,7 +235,7 @@
             <span class="term-dot" aria-hidden="true"></span>
             <span class="term-dot" aria-hidden="true"></span>
             <span class="term-dot" aria-hidden="true"></span>
-            <span class="terminal-title mono">sentinel — scan telemetry</span>
+            <span class="terminal-title mono">caliber — scan telemetry</span>
           </div>
           <pre class="log-output mono" id="console" aria-live="off"></pre>
         </div>
@@ -241,7 +247,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════ RESULTS ═══════════════════════════════ -->
+  <!-- ======================== RESULTS ======================== -->
   <section id="view-results" class="view" aria-labelledby="resultsTitle" hidden>
     <div class="wrap">
       <div class="results-header">
@@ -263,13 +269,9 @@
         </div>
       </div>
 
-      <!-- severity KPIs -->
       <div class="kpi-row" id="stats"></div>
-
-      <!-- severity mix bar -->
       <div class="mix-panel" id="mix" aria-label="Severity distribution"></div>
 
-      <!-- summary + vitals -->
       <div class="results-grid">
         <div class="card summary-card ticks">
           <h2 class="card-title">Executive summary</h2>
@@ -285,13 +287,11 @@
         </div>
       </div>
 
-      <!-- captures -->
       <div class="card">
         <h2 class="card-title">Captures</h2>
         <div class="gallery" id="gallery"></div>
       </div>
 
-      <!-- findings -->
       <div class="card">
         <div class="findings-header">
           <h2 class="card-title">Findings</h2>
@@ -300,7 +300,6 @@
         <div id="findings" class="findings-list"></div>
       </div>
 
-      <!-- scan record -->
       <div class="card">
         <h2 class="card-title">Scan record</h2>
         <ul class="record-list" id="safetyList"></ul>
@@ -308,7 +307,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════ ERROR ═══════════════════════════════ -->
+  <!-- ======================== ERROR ======================== -->
   <section id="view-error" class="view" aria-labelledby="errTitle" hidden>
     <div class="wrap narrow">
       <div class="error-card ticks">
@@ -322,7 +321,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════ IMAGE LIGHTBOX ═══════════════════════════ -->
+  <!-- IMAGE LIGHTBOX -->
   <div id="lightbox" class="lightbox" role="dialog" aria-label="Image viewer" aria-modal="true" hidden>
     <button class="lightbox-close" aria-label="Close image viewer">&times;</button>
     <img id="lightboxImg" class="lightbox-img" alt="" />
@@ -333,18 +332,14 @@
   <div class="wrap foot-inner">
     <span class="wordmark small">
       <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 1.8v4M12 18.2v4M1.8 12h4M18.2 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>
+        <svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="2.1" fill="currentColor"/></svg>
       </span>
-      SiteSentinel
+      Caliber
     </span>
-    <span class="foot-text mono">Read-only website QA · no accounts · nothing stored</span>
   </div>
 </footer>
 
-<script src="/app-config.js?v=2"></script>
-<script src="/app.js?v=2" defer></script>
+<script src="/app-config.js?v=4"></script>
+<script src="/app.js?v=4" defer></script>
 </body>
 </html>
-
-
-

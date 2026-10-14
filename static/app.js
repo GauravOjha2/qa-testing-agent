@@ -1,8 +1,9 @@
 /* ============================================================================
-   SiteSentinel — Frontend controller v2 ("Instrument")
-   Landing → live console (SSE) → QA workspace. Zero dependencies, ES2022.
-   Interactions: scroll reveal, mouse spotlight, seamless ticker, SVG progress
-   dial, count-ups, colored telemetry, focus-managed lightbox, health status.
+   Caliber — Frontend controller v3 ("Atelier")
+   Warm-ink/parchment system, canvas hero (wireframe + scan plane),
+   custom cursor, Lenis-style smooth scroll, scroll progress, magnetic CTA,
+   clip-path headline, spotlight, ticker, dial, telemetry, lightbox.
+   Zero dependencies, ES2022. All fetch/EventSource + element IDs preserved.
    ========================================================================== */
 
 (() => {
@@ -25,6 +26,7 @@
     `<svg viewBox="${viewBox}" width="${size}" height="${size}" aria-hidden="true">${paths}</svg>`;
 
   const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const FINE = window.matchMedia("(pointer: fine)");
 
   /* ─── Static data ─────────────────────────────────────────────────────── */
   const ICONS = {
@@ -39,19 +41,19 @@
   const CHECKS = [
     { num: "01", title: "Responsive Viewports",
       desc: "Full-page captures at mobile (390px), tablet (768px), and desktop (1440px), plus horizontal-overflow fault detection.",
-      icon: "layout", color: "#8b8ff8", tint: "rgba(139,143,248,.10)", edge: "rgba(139,143,248,.24)" },
+      icon: "layout", color: "#FF3A1A", tint: "rgba(255,58,26,.09)", edge: "rgba(255,58,26,.22)" },
     { num: "02", title: "Accessibility Audit",
       desc: "Automated engine enforcing WCAG 2.2 A/AA criteria with precise DOM selector and code snippet evidence.",
-      icon: "a11y", color: "#67e8f9", tint: "rgba(103,232,249,.08)", edge: "rgba(103,232,249,.2)" },
+      icon: "a11y", color: "#5FA87A", tint: "rgba(95,168,122,.08)", edge: "rgba(95,168,122,.2)" },
     { num: "03", title: "Core Web Vitals",
       desc: "Mobile performance evaluation measuring LCP, CLS, and TBT/INP against production ranking thresholds.",
-      icon: "speed", color: "#facc15", tint: "rgba(250,204,21,.08)", edge: "rgba(250,204,21,.2)" },
+      icon: "speed", color: "#B89A2E", tint: "rgba(184,154,46,.08)", edge: "rgba(184,154,46,.2)" },
     { num: "04", title: "Form Safety & Boundaries",
       desc: "Every input field tested with boundary, invalid, and international characters. Triply guarded against submission.",
-      icon: "forms", color: "#f0526a", tint: "rgba(240,82,106,.08)", edge: "rgba(240,82,106,.22)" },
+      icon: "forms", color: "#C84A32", tint: "rgba(200,74,50,.08)", edge: "rgba(200,74,50,.2)" },
     { num: "05", title: "AI Answer Readiness",
       desc: "Multimodal AI evaluation checking whether generative answer engines can accurately cite product claims.",
-      icon: "answer", color: "#34d399", tint: "rgba(52,211,153,.08)", edge: "rgba(52,211,153,.22)" },
+      icon: "answer", color: "#6B8FA0", tint: "rgba(107,143,160,.08)", edge: "rgba(107,143,160,.2)" },
   ];
 
   const STEPS = [
@@ -84,16 +86,391 @@
   const STAGE_LABELS = Object.fromEntries(STAGE_ORDER.map((r) => [r[0], r[1]]));
 
   const SEV_COLOR = {
-    critical: "#f0526a",
-    high: "#fb923c",
-    medium: "#facc15",
-    low: "#60a5fa",
-    info: "#7b7f88",
+    critical: "#C84A32",
+    high: "#C07A2E",
+    medium: "#B89A2E",
+    low: "#6B8FA0",
+    info: "#7A7D83",
   };
+
+  /* ─── Scroll progress hairline ────────────────────────────────────────── */
+  function initScrollProgress() {
+    const bar = $("scrollProgress");
+    if (!bar || REDUCED.matches) return;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const h = document.documentElement;
+        const max = h.scrollHeight - h.clientHeight;
+        const pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+        bar.style.width = pct + "%";
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+
+  /* ─── Smooth scrolling ─────────────────────────────────────────────────
+     Native wheel/trackpad scrolling is already smooth — a custom lerp
+     hijack fights it and produces jank, so we deliberately do NOT hijack
+     the scroll. `scroll-behavior: smooth` in CSS handles anchor glides.
+  */
+
+  /* ─── Custom cursor ───────────────────────────────────────────────────── */
+  function initCursor() {
+    if (REDUCED.matches || !FINE.matches) return;
+    const dot = $("cursorDot");
+    const ring = $("cursorRing");
+    if (!dot || !ring) return;
+
+    let mx = -100, my = -100;
+    let rx = -100, ry = -100;
+    let hasMoved = false;
+
+    document.addEventListener("mousemove", (e) => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px, ${my}px)`;
+      if (!hasMoved) {
+        hasMoved = true;
+        document.body.classList.add("has-cursor");
+        rx = mx; ry = my;
+      }
+    }, { passive: true });
+
+    document.addEventListener("mouseleave", () => {
+      document.body.classList.remove("has-cursor");
+      hasMoved = false;
+    });
+
+    // Lagging ring
+    const tick = () => {
+      rx += (mx - rx) * 0.14;
+      ry += (my - ry) * 0.14;
+      ring.style.transform = `translate(${rx}px, ${ry}px)`;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+
+    // Expand on interactive elements
+    const hoverSel = "a, button, [role='button'], input, summary, .cap-card, .flow-card, .safety-item, .shot";
+    document.addEventListener("mouseover", (e) => {
+      if (e.target.closest(hoverSel)) document.body.classList.add("cursor-hover");
+    });
+    document.addEventListener("mouseout", (e) => {
+      if (e.target.closest(hoverSel)) document.body.classList.remove("cursor-hover");
+    });
+  }
+
+  /* ─── Magnetic hover ──────────────────────────────────────────────────── */
+  function initMagnetic() {
+    if (REDUCED.matches || !FINE.matches) return;
+    document.querySelectorAll("[data-magnetic]").forEach((btn) => {
+      const el = btn;
+      el.addEventListener("mousemove", (e) => {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) * 0.18;
+        const dy = (e.clientY - cy) * 0.28;
+        el.style.transform = `translate(${dx}px, ${dy}px)`;
+      });
+      el.addEventListener("mouseleave", () => {
+        el.style.transform = "";
+      });
+    });
+  }
+
+  /* ─── Canvas hero — wireframe page + scan plane ────────────────────────── */
+  function initHeroCanvas() {
+    const canvas = $("heroCanvas");
+    const hero = canvas ? canvas.closest(".hero") : null;
+    if (!canvas || !hero) return;
+
+    // Degrade: reduced motion, no canvas, touch-only
+    const canUseCanvas = !!canvas.getContext && !REDUCED.matches;
+    const isTouchOnly = !FINE.matches && ("ontouchstart" in window);
+    if (!canUseCanvas || isTouchOnly) {
+      hero.classList.add("no-canvas");
+      return;
+    }
+
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) { hero.classList.add("no-canvas"); return; }
+
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0, h = 0;
+    let raf = 0;
+    let t = 0;
+    let pointerX = 0.5, pointerY = 0.46;
+    let targetPX = 0.5, targetPY = 0.46;
+    let dragging = false;
+    let dragStartX = 0, dragStartPX = 0.5;
+    let visible = true;
+
+    // Wireframe layout — blocks that read as "a web page"
+    // Each rect: x, y, w, h in normalized 0..1 space, centered
+    const blocks = [
+      // nav
+      { x: 0.08, y: 0.06, w: 0.84, h: 0.05 },
+      // hero
+      { x: 0.10, y: 0.14, w: 0.52, h: 0.045 },
+      { x: 0.10, y: 0.195, w: 0.38, h: 0.018 },
+      { x: 0.70, y: 0.14, w: 0.20, h: 0.14 },
+      // cards row
+      { x: 0.08, y: 0.34, w: 0.25, h: 0.16 },
+      { x: 0.375, y: 0.34, w: 0.25, h: 0.16 },
+      { x: 0.67, y: 0.34, w: 0.25, h: 0.16 },
+      // text blocks
+      { x: 0.08, y: 0.54, w: 0.84, h: 0.012 },
+      { x: 0.08, y: 0.565, w: 0.72, h: 0.012 },
+      { x: 0.08, y: 0.59, w: 0.60, h: 0.012 },
+      // gallery
+      { x: 0.08, y: 0.64, w: 0.41, h: 0.18 },
+      { x: 0.51, y: 0.64, w: 0.41, h: 0.18 },
+      // footer
+      { x: 0.08, y: 0.86, w: 0.84, h: 0.06 },
+    ];
+
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = hero.clientWidth;
+      h = hero.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    // Project a normalized point into canvas coords with subtle perspective
+    const project = (nx, ny, px, py) => {
+      // center layout in canvas; scale to fit with margin
+      const scale = Math.min(w * 0.78, h * 0.72);
+      const ox = w * 0.5 + (px - 0.5) * w * 0.06; // parallax
+      const oy = h * 0.44 + (py - 0.5) * h * 0.06;
+      // isometric-ish tilt
+      const tilt = 0.08;
+      const px2 = (nx - 0.5) * scale + ox;
+      const py2 = (ny - 0.5) * scale * (1 - tilt * 0.5) + oy + (nx - 0.5) * scale * tilt * 0.28;
+      return [px2, py2];
+    };
+
+    const draw = () => {
+      if (!visible) return;
+      t += 0.008;
+      // smooth pointer
+      pointerX += (targetPX - pointerX) * 0.06;
+      pointerY += (targetPY - pointerY) * 0.06;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Subtle warm vignette wash
+      const g = ctx.createRadialGradient(w * 0.5, h * 0.42, 0, w * 0.5, h * 0.42, Math.max(w, h) * 0.72);
+      g.addColorStop(0, "rgba(255,58,26,0.045)");
+      g.addColorStop(0.55, "rgba(255,122,61,0.015)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+
+      // Scan sweep position (0..1)
+      const sweepT = ((t * 0.55) % 1);
+      const sweepY = 0.04 + sweepT * 0.90;
+
+      // Draw wireframe edges
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      blocks.forEach((b) => {
+        const [x0, y0] = project(b.x, b.y, pointerX, pointerY);
+        const [x1, y1] = project(b.x + b.w, b.y, pointerX, pointerY);
+        const [x2, y2] = project(b.x + b.w, b.y + b.h, pointerX, pointerY);
+        const [x3, y3] = project(b.x, b.y + b.h, pointerX, pointerY);
+
+        // Distance from sweep plane — warm highlight when crossed
+        const centerY = b.y + b.h * 0.5;
+        const dist = Math.abs(centerY - sweepY);
+        const hit = Math.max(0, 1 - dist / 0.09);
+
+        // Depth cue
+        const depth = 0.92 + (b.y * 0.14);
+
+        // Fill
+        ctx.fillStyle = hit > 0.02
+          ? `rgba(255,58,26,${0.035 + hit * 0.06})`
+          : `rgba(245,241,232,${0.02 * depth})`;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3);
+        ctx.closePath();
+        ctx.fill();
+
+        // Stroke
+        ctx.strokeStyle = hit > 0.02
+          ? `rgba(255,58,26,${0.18 + hit * 0.55})`
+          : `rgba(245,241,232,${0.13 * depth})`;
+        ctx.lineWidth = hit > 0.12 ? 1.2 : 0.85;
+        ctx.stroke();
+
+        // Inner detail lines (for larger blocks)
+        if (b.w > 0.2 && b.h > 0.08) {
+          ctx.strokeStyle = `rgba(245,241,232,${0.06 * depth})`;
+          ctx.lineWidth = 0.6;
+          ctx.setLineDash([4, 6]);
+          const [ix0, iy0] = project(b.x + 0.018, b.y + b.h * 0.62, pointerX, pointerY);
+          const [ix1, iy1] = project(b.x + b.w - 0.018, b.y + b.h * 0.62, pointerX, pointerY);
+          ctx.beginPath(); ctx.moveTo(ix0, iy0); ctx.lineTo(ix1, iy1); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Hot edge on sweep
+        if (hit > 0.22) {
+          ctx.strokeStyle = `rgba(255,122,61,${hit * 0.55})`;
+          ctx.lineWidth = 1.6;
+          ctx.shadowColor = "rgba(255,58,26,0.5)";
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+      });
+
+      // Scan plane — horizontal beam sweeping down the page
+      const [sx0, sy0] = project(0.04, sweepY, pointerX, pointerY);
+      const [sx1, sy1] = project(0.96, sweepY, pointerX, pointerY);
+      // Extend a bit for perspective
+      const beamGrad = ctx.createLinearGradient(sx0 - 40, sy0, sx1 + 40, sy1);
+      beamGrad.addColorStop(0, "rgba(255,58,26,0)");
+      beamGrad.addColorStop(0.18, "rgba(255,58,26,0.0)");
+      beamGrad.addColorStop(0.5, "rgba(255,122,61,0.85)");
+      beamGrad.addColorStop(0.82, "rgba(255,58,26,0.0)");
+      beamGrad.addColorStop(1, "rgba(255,58,26,0)");
+
+      ctx.strokeStyle = beamGrad;
+      ctx.lineWidth = 2.2;
+      ctx.shadowColor = "rgba(255,58,26,0.55)";
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.moveTo(sx0 - 24, sy0);
+      ctx.lineTo(sx1 + 24, sy1);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Soft glow under beam
+      ctx.fillStyle = "rgba(255,58,26,0.035)";
+      ctx.beginPath();
+      // quad around beam
+      const [gx0a, gy0a] = project(0.04, sweepY - 0.018, pointerX, pointerY);
+      const [gx1a, gy1a] = project(0.96, sweepY - 0.018, pointerX, pointerY);
+      const [gx1b, gy1b] = project(0.96, sweepY + 0.018, pointerX, pointerY);
+      const [gx0b, gy0b] = project(0.04, sweepY + 0.018, pointerX, pointerY);
+      ctx.moveTo(gx0a, gy0a); ctx.lineTo(gx1a, gy1a); ctx.lineTo(gx1b, gy1b); ctx.lineTo(gx0b, gy0b);
+      ctx.closePath();
+      ctx.fill();
+
+      // Corner brackets around the page silhouette
+      const pagePad = 0.025;
+      const corners = [
+        [0.08 - pagePad, 0.04 - pagePad],
+        [0.92 + pagePad, 0.04 - pagePad],
+        [0.92 + pagePad, 0.92 + pagePad],
+        [0.08 - pagePad, 0.92 + pagePad],
+      ].map(([nx, ny]) => project(nx, ny, pointerX, pointerY));
+
+      ctx.strokeStyle = "rgba(245,241,232,0.22)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      const bl = 14;
+      corners.forEach(([cx2, cy2], i) => {
+        ctx.beginPath();
+        if (i === 0) { ctx.moveTo(cx2 + bl, cy2); ctx.lineTo(cx2, cy2); ctx.lineTo(cx2, cy2 + bl); }
+        if (i === 1) { ctx.moveTo(cx2 - bl, cy2); ctx.lineTo(cx2, cy2); ctx.lineTo(cx2, cy2 + bl); }
+        if (i === 2) { ctx.moveTo(cx2 - bl, cy2); ctx.lineTo(cx2, cy2); ctx.lineTo(cx2, cy2 - bl); }
+        if (i === 3) { ctx.moveTo(cx2 + bl, cy2); ctx.lineTo(cx2, cy2); ctx.lineTo(cx2, cy2 - bl); }
+        ctx.stroke();
+      });
+
+      raf = requestAnimationFrame(draw);
+    };
+
+    // Pointer tracking
+    const onMove = (clientX) => {
+      const rect = hero.getBoundingClientRect();
+      targetPX = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    };
+    const onMoveY = (clientY) => {
+      const rect = hero.getBoundingClientRect();
+      targetPY = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+    };
+
+    hero.addEventListener("mousemove", (e) => {
+      if (dragging) return;
+      onMove(e.clientX); onMoveY(e.clientY);
+    }, { passive: true });
+
+    canvas.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      canvas.setPointerCapture(e.pointerId);
+      dragStartX = e.clientX;
+      dragStartPX = targetPX;
+      canvas.style.cursor = "grabbing";
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const rect = hero.getBoundingClientRect();
+      const dx = (e.clientX - dragStartX) / rect.width;
+      targetPX = Math.max(0, Math.min(1, dragStartPX + dx * 1.1));
+      onMoveY(e.clientY);
+    });
+    const stopDrag = () => { dragging = false; canvas.style.cursor = "grab"; };
+    canvas.addEventListener("pointerup", stopDrag);
+    canvas.addEventListener("pointercancel", stopDrag);
+    canvas.addEventListener("touchstart", (e) => {
+      if (e.touches[0]) { onMove(e.touches[0].clientX); onMoveY(e.touches[0].clientY); }
+    }, { passive: true });
+
+    // Pause when offscreen
+    const io = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      visible = entry.isIntersecting;
+      if (visible && !raf) raf = requestAnimationFrame(draw);
+      else if (!visible && raf) { cancelAnimationFrame(raf); raf = 0; }
+    }, { threshold: 0 });
+    io.observe(hero);
+
+    // Respect visibility
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+      else if (visible && !raf) raf = requestAnimationFrame(draw);
+    });
+
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+    raf = requestAnimationFrame(draw);
+  }
 
   /* ─── Ambient interactions ────────────────────────────────────────────── */
   function initReveal() {
     const nodes = document.querySelectorAll("[data-reveal]");
+    // Headline clip-path: trigger separately
+    const heroTitle = document.querySelector(".hero-title");
+    if (heroTitle) {
+      // Stagger lines
+      heroTitle.querySelectorAll(".line").forEach((l, i) => {
+        l.style.setProperty("--ld", `${i * 140}ms`);
+      });
+      // Reveal title eagerly
+      requestAnimationFrame(() => {
+        heroTitle.classList.add("in");
+        heroTitle.querySelectorAll(".line").forEach((l) => {
+          l.style.clipPath = "inset(0 0 0 0)";
+        });
+      });
+    }
+
     if (REDUCED.matches || !("IntersectionObserver" in window)) {
       nodes.forEach((n) => n.classList.add("in"));
       return;
@@ -110,13 +487,15 @@
       { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
     );
     nodes.forEach((n, i) => {
-      if (n.closest(".hero")) n.style.setProperty("--d", `${Math.min(i * 90, 450)}ms`);
+      if (n.closest(".hero-content") && !n.classList.contains("in")) {
+        n.style.setProperty("--d", `${Math.min(i * 70, 360)}ms`);
+      }
       io.observe(n);
     });
   }
 
   function initSpotlight() {
-    if (REDUCED.matches || !window.matchMedia("(pointer: fine)").matches) return;
+    if (REDUCED.matches || !FINE.matches) return;
     document.addEventListener("pointermove", (e) => {
       const card = e.target.closest && e.target.closest(".spot");
       if (!card) return;
@@ -124,18 +503,6 @@
       card.style.setProperty("--mx", `${e.clientX - rect.left}px`);
       card.style.setProperty("--my", `${e.clientY - rect.top}px`);
     }, { passive: true });
-  }
-
-  function initTicker() {
-    const inner = $("tickerInner");
-    if (!inner) return;
-    // Duplicate content for a seamless -50% loop.
-    const clone = inner.innerHTML;
-    const dup = document.createElement("div");
-    dup.setAttribute("aria-hidden", "true");
-    dup.style.display = "contents";
-    dup.innerHTML = clone;
-    inner.append(...dup.childNodes);
   }
 
   /* ─── Landing content ─────────────────────────────────────────────────── */
@@ -208,31 +575,11 @@
     window.scrollTo({ top: 0, behavior: REDUCED.matches ? "auto" : "smooth" });
   }
 
-  /* ─── Engine health → nav status ──────────────────────────────────────── */
+  /* ─── Health ──────────────────────────────────────────────────────────── */
   async function checkHealth() {
-    const status = $("navStatus");
-    try {
-      const res = await fetch(url_("/api/health"));
-      if (!res.ok) throw new Error("unhealthy");
-      const data = await res.json();
-      if (status) {
-        status.classList.add("ok");
-        const text = status.querySelector(".status-text");
-        if (text) text.textContent = "engine online";
-      }
-      if (!data.ai_enabled) {
-        const help = $("urlHelp");
-        if (help) {
-          help.textContent = "Read-only scan · robots.txt fail-closed · forms never submitted (AI layer disabled on this instance)";
-        }
-      }
-    } catch {
-      if (status) {
-        status.classList.add("down");
-        const text = status.querySelector(".status-text");
-        if (text) text.textContent = "engine offline";
-      }
-    }
+    // The landing shows no status chrome; this is a warm-up ping so the first
+    // scan starts on a hot connection.
+    try { await fetch(url_("/api/health")); } catch { /* engine unreachable — scan errors are surfaced later */ }
   }
 
   /* ─── Dial + progress beam ────────────────────────────────────────────── */
@@ -343,15 +690,9 @@
     const frame = $("previewFrame");
     if (frame) frame.classList.remove("ready");
     const img = $("previewImg");
-    if (img) {
-      img.hidden = true;
-      img.removeAttribute("src");
-    }
+    if (img) { img.hidden = true; img.removeAttribute("src"); }
     const empty = $("previewEmpty");
-    if (empty) {
-      const s = empty.querySelector("span");
-      if (s) s.textContent = "Awaiting first capture";
-    }
+    if (empty) { const s = empty.querySelector("span"); if (s) s.textContent = "Awaiting first capture"; }
     const badge = $("previewBadge");
     if (badge) badge.lastChild.textContent = "queued";
     const meta = $("previewMeta");
@@ -365,10 +706,7 @@
     const probe = new Image();
     probe.onload = () => {
       const target = $("previewImg");
-      if (target) {
-        target.src = probe.src;
-        target.hidden = false;
-      }
+      if (target) { target.src = probe.src; target.hidden = false; }
       const frame = $("previewFrame");
       if (frame) frame.classList.add("ready");
       const badge = $("previewBadge");
@@ -382,10 +720,7 @@
     probe.onerror = () => {
       previewLoaded = false;
       const empty = $("previewEmpty");
-      if (empty) {
-        const s = empty.querySelector("span");
-        if (s) s.textContent = "Preview unavailable";
-      }
+      if (empty) { const s = empty.querySelector("span"); if (s) s.textContent = "Preview unavailable"; }
     };
     probe.src = url_(`/api/scan/${activeScanId}/shot/desktop.jpg?t=${Date.now()}`);
   }
@@ -403,13 +738,9 @@
     }, 1000);
   }
 
-  /* ─── Animated counter ────────────────────────────────────────────────── */
   function countUp(node, value, duration = 600) {
     if (!node) return;
-    if (REDUCED.matches) {
-      node.textContent = String(value);
-      return;
-    }
+    if (REDUCED.matches) { node.textContent = String(value); return; }
     const start = performance.now();
     const tick = (now) => {
       const progress = Math.min(1, (now - start) / duration);
@@ -435,12 +766,9 @@
     if (!host) return;
     host.innerHTML = "";
     const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
-
     host.append(el("div", "mix-title mono", "Severity distribution"));
-
     const bar = el("div", "mix-bar");
     const legend = el("div", "mix-legend mono");
-
     ["critical", "high", "medium", "low", "info"].forEach((sev) => {
       const value = counts[sev] || 0;
       if (!value) return;
@@ -449,7 +777,6 @@
       seg.style.background = SEV_COLOR[sev];
       seg.style.color = SEV_COLOR[sev];
       bar.append(seg);
-
       const item = el("span");
       const dot = el("i");
       dot.style.background = SEV_COLOR[sev];
@@ -457,7 +784,6 @@
       item.append(dot, document.createTextNode(`${sev} · ${value}`));
       legend.append(item);
     });
-
     host.append(bar, legend);
   }
 
@@ -488,16 +814,13 @@
       host.append(el("p", "vitals-note", "Core Web Vitals were not captured for this scan."));
       return;
     }
-
     host.append(renderVitalCard("LCP", vitals.lcp_ms, "ms", [2500, 4000]));
     host.append(renderVitalCard("CLS", vitals.cls, "", [0.1, 0.25]));
     host.append(renderVitalCard("INP", vitals.inp_ms, "ms", [200, 500]));
     host.append(renderVitalCard("TBT", vitals.tbt_ms, "ms", [200, 600]));
-
     if (vitals.performance_score !== null && vitals.performance_score !== undefined) {
       host.append(renderVitalCard("Score", vitals.performance_score, "", null, 0));
     }
-
     const note = el("p", "vitals-note mono");
     note.textContent = `Source: ${vitals.source}.${vitals.inp_note ? " " + vitals.inp_note : ""}`;
     host.append(note);
@@ -511,7 +834,6 @@
       host.append(el("p", "vitals-note", "No captures recorded."));
       return;
     }
-
     shots.forEach((shot) => {
       const fig = el("figure", "shot");
       fig.tabIndex = 0;
@@ -521,33 +843,21 @@
       img.src = url_(`/api/scan/${scanId}/shot/${shot.viewport}.jpg`);
       img.alt = `${shot.viewport} viewport capture (${shot.width}x${shot.height})`;
       img.loading = "lazy";
-
-      const open = () =>
-        openLightbox(url_(`/api/scan/${scanId}/shot/${shot.viewport}.png`), img.alt, fig);
+      const open = () => openLightbox(url_(`/api/scan/${scanId}/shot/${shot.viewport}.png`), img.alt, fig);
       fig.addEventListener("click", open);
       fig.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          open();
-        }
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
       });
-
       const cap = el("figcaption");
       cap.append(el("span", null, `${shot.viewport} · ${shot.width}×${shot.height}`));
-      const chip = el(
-        "span",
-        `chip ${shot.overflow_x ? "warn" : "ok"}`,
-        shot.overflow_x ? `+${shot.overflow_px}px overflow` : "fits"
-      );
+      const chip = el("span", `chip ${shot.overflow_x ? "warn" : "ok"}`, shot.overflow_x ? `+${shot.overflow_px}px overflow` : "fits");
       cap.append(chip);
       fig.append(img, cap);
       host.append(fig);
     });
   }
 
-  /* ─── Lightbox (focus-managed) ────────────────────────────────────────── */
   let lightboxTrigger = null;
-
   function openLightbox(src, alt, trigger) {
     const lb = $("lightbox");
     const img = $("lightboxImg");
@@ -560,15 +870,12 @@
     const closeBtn = lb.querySelector(".lightbox-close");
     if (closeBtn) closeBtn.focus();
   }
-
   function closeLightbox() {
     const lb = $("lightbox");
     if (!lb || lb.hidden) return;
     lb.hidden = true;
     document.body.style.overflow = "";
-    if (lightboxTrigger && document.contains(lightboxTrigger)) {
-      lightboxTrigger.focus();
-    }
+    if (lightboxTrigger && document.contains(lightboxTrigger)) lightboxTrigger.focus();
     lightboxTrigger = null;
   }
 
@@ -596,14 +903,9 @@
     summary.append(el("span", "f-title", f.title));
     summary.append(el("span", "f-meta mono", `${f.category} · ${f.id}`));
     item.append(summary);
-
     const body = el("div", "f-body");
-    if (f.detail) {
-      body.append(el("p", null, f.detail));
-    }
-    if (f.evidence && Object.keys(f.evidence).length) {
-      body.append(createEvidenceBox(f.evidence));
-    }
+    if (f.detail) body.append(el("p", null, f.detail));
+    if (f.evidence && Object.keys(f.evidence).length) body.append(createEvidenceBox(f.evidence));
     if (f.recommendation) {
       const rec = el("p", "f-rec");
       rec.append(el("strong", null, "Fix — "));
@@ -618,21 +920,15 @@
     const host = $("findings");
     if (!host) return;
     host.innerHTML = "";
-
     const list = ((currentResult && currentResult.findings) || []).filter(
       (f) => activeFilter === "all" || f.severity === activeFilter
     );
-
     if (!list.length) {
       const empty = el("div", "empty-state");
-      empty.innerHTML = `
-        <div class="empty-icon">${svg(ICONS.check, 20)}</div>
-        <p>${activeFilter === "all" ? "No findings recorded for this target." : `No ${activeFilter} severity findings.`}</p>
-      `;
+      empty.innerHTML = `<div class="empty-icon">${svg(ICONS.check, 20)}</div><p>${activeFilter === "all" ? "No findings recorded for this target." : `No ${activeFilter} severity findings.`}</p>`;
       host.append(empty);
       return;
     }
-
     list.forEach((f) => host.append(createFindingElement(f)));
   }
 
@@ -640,13 +936,11 @@
     const host = $("filters");
     if (!host) return;
     host.innerHTML = "";
-
     const total = Object.values(counts).reduce((a, b) => a + b, 0);
     const options = [["all", "All", total]];
     ["critical", "high", "medium", "low", "info"].forEach((sev) => {
       if (counts[sev]) options.push([sev, sev, counts[sev]]);
     });
-
     options.forEach(([key, label, count]) => {
       const btn = el("button", null, `${label} · ${count}`);
       btn.type = "button";
@@ -668,13 +962,11 @@
 
     const titleNode = $("resultsTitle");
     if (titleNode) titleNode.textContent = r.final_url || r.target_url;
-
     const metaNode = $("resultsMeta");
     if (metaNode) metaNode.textContent = `${total} findings · ${r.elapsed_seconds}s scan time · ${r.scanned_at}`;
 
     const pdfBtn = $("pdfBtn");
     if (pdfBtn) pdfBtn.href = url_(`/api/scan/${r.scan_id}/report.pdf`);
-
     const jsonBtn = $("jsonBtn");
     if (jsonBtn) jsonBtn.href = url_(`/api/scan/${r.scan_id}/report.json`);
 
@@ -723,7 +1015,7 @@
       recordNode.innerHTML = "";
       [
         `robots.txt: ${s.robots_txt || "verified"} (${s.robots_url || ""})`,
-        `Throttled to one request every ${s.throttle_seconds || 1.5}s from ${s.user_agent || "SiteSentinel"}`,
+        `Throttled to one request every ${s.throttle_seconds || 1.5}s from ${s.user_agent || "Caliber"}`,
         `Forms submitted: ${s.forms_submitted ?? 0}. ${s.forms_policy || "Read-only audit."}`,
         `AI checks: ${s.ai_model || "gemini-flash-latest"}. ${s.ai_model_policy || ""}`,
       ].forEach((line) => recordNode.append(el("li", null, line)));
@@ -751,10 +1043,7 @@
     const err = $("errorMessage");
     if (err) err.textContent = msg;
     show("error");
-    if (activeEventSource) {
-      activeEventSource.close();
-      activeEventSource = null;
-    }
+    if (activeEventSource) { activeEventSource.close(); activeEventSource = null; }
     clearInterval(timer);
     setScanButtonState(false);
   }
@@ -794,13 +1083,11 @@
         body: JSON.stringify({ url: targetUrl }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || "Could not initialize the scan.");
-      }
+      if (!res.ok) throw new Error(data.detail || "Could not initialize the scan.");
       scanId = data.scan_id;
     } catch (err) {
       setScanButtonState(false);
-      showError(err.message || "Failed to reach the SiteSentinel engine.");
+      showError(err.message || "Failed to reach the Caliber engine.");
       return;
     }
 
@@ -809,32 +1096,23 @@
 
     activeEventSource.onmessage = (e) => {
       let event;
-      try {
-        event = JSON.parse(e.data);
-      } catch {
-        return;
-      }
+      try { event = JSON.parse(e.data); } catch { return; }
 
       if (event.type === "log") {
         logLine(event.message);
       } else if (event.type === "stage") {
         updateStage(event);
       } else if (event.type === "robots") {
-        const liveAct = $("liveActivity");
-        if (liveAct) liveAct.textContent = "robots.txt verified";
+        const liveAct2 = $("liveActivity");
+        if (liveAct2) liveAct2.textContent = "robots.txt verified";
         logLine("robots.txt verified — fail-closed policy passed");
       } else if (event.type === "preflight") {
         logLine(event.message);
       } else if (event.type === "done") {
         setProgress(100);
-
-        if (activeEventSource) {
-          activeEventSource.close();
-          activeEventSource = null;
-        }
+        if (activeEventSource) { activeEventSource.close(); activeEventSource = null; }
         clearInterval(timer);
         setScanButtonState(false);
-        // Brief pause so the dial reads 100% before the workspace appears.
         setTimeout(() => renderResults(event), REDUCED.matches ? 0 : 450);
       } else if (event.type === "error") {
         setScanButtonState(false);
@@ -848,15 +1126,11 @@
       activeEventSource = null;
       clearInterval(timer);
       setScanButtonState(false);
-
       fetch(url_(`/api/scan/${scanId}`))
         .then((r) => r.json())
         .then((job) => {
-          if (job.status === "done" && job.result) {
-            renderResults(job);
-          } else {
-            showError(job.error || "Connection to the scanner dropped. The scan may have timed out.");
-          }
+          if (job.status === "done" && job.result) renderResults(job);
+          else showError(job.error || "Connection to the scanner dropped. The scan may have timed out.");
         })
         .catch(() => showError("Connection lost to the scanner service."));
     };
@@ -869,7 +1143,10 @@
     renderFacts();
     initReveal();
     initSpotlight();
-    initTicker();
+    initScrollProgress();
+    initCursor();
+    initMagnetic();
+    initHeroCanvas();
     checkHealth();
 
     const scanForm = $("scanForm");
@@ -880,10 +1157,7 @@
         const val = urlInput ? urlInput.value.trim() : "";
         if (!val) {
           const err = $("landingError");
-          if (err) {
-            err.hidden = false;
-            err.textContent = "Please enter a valid website URL to scan.";
-          }
+          if (err) { err.hidden = false; err.textContent = "Please enter a valid website URL to scan."; }
           if (urlInput) urlInput.focus();
           return;
         }
@@ -895,10 +1169,7 @@
       const btn = $(id);
       if (!btn) return;
       btn.addEventListener("click", () => {
-        if (activeEventSource) {
-          activeEventSource.close();
-          activeEventSource = null;
-        }
+        if (activeEventSource) { activeEventSource.close(); activeEventSource = null; }
         clearInterval(timer);
         setScanButtonState(false);
         show("landing");
@@ -910,16 +1181,11 @@
     const lb = $("lightbox");
     if (lb) {
       lb.addEventListener("click", (e) => {
-        if (e.target === lb || e.target.classList.contains("lightbox-close")) {
-          closeLightbox();
-        }
+        if (e.target === lb || e.target.classList.contains("lightbox-close")) closeLightbox();
       });
     }
-
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        closeLightbox();
-      }
+      if (e.key === "Escape") closeLightbox();
     });
 
     const params = new URLSearchParams(window.location.search);

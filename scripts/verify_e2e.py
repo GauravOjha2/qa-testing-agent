@@ -40,7 +40,7 @@ def main() -> int:
     with httpx.Client(timeout=120.0) as client:
         # --- 1. landing page + assets ------------------------------------
         home = client.get(f"{BASE}/")
-        check("landing page serves HTML", home.status_code == 200 and "SiteSentinel" in home.text,
+        check("landing page serves HTML", home.status_code == 200 and "Caliber" in home.text,
               f"{home.status_code}, {len(home.text)} bytes")
         for marker in ("What it checks", "How it works", "Safety", "The report",
                        "checkList", "stepList", "factList", "report-shot",

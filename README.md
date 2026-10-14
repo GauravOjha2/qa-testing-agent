@@ -5,11 +5,12 @@ get an executive A4 report plus the structured JSON it was built from.
 
 ![hero](docs/img/hero.png)
 
-Paper and ink, hairline rules, colour reserved for severity — no gradient washes, no
-badges naming the tools, no filler copy. During a scan the progress view shows the **actual
-capture of the target page** as soon as the first stage finishes, alongside live issue
-counts. All motion collapses under `prefers-reduced-motion`. See
-[Design](docs/Design.md).
+Warm ink and parchment, Fraunces display, a canvas wireframe swept by a vermillion scan
+plane — colour reserved for severity and live state, no purple gradients, no vendor badges,
+no filler copy. During a scan the progress view shows the **actual capture of the target
+page** as soon as the first stage finishes, alongside live issue counts. Every pointer and
+motion enhancement degrades gracefully; all motion collapses under `prefers-reduced-motion`.
+See [Design](docs/Design.md).
 
 ---
 
