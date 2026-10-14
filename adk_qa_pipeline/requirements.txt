@@ -1,0 +1,5 @@
+# Dependencies for the ADK experiment pipeline only.
+# The original procedural pipeline keeps its own requirements.txt untouched.
+google-adk>=1.0.0
+playwright>=1.48.0
+httpx>=0.27.2
