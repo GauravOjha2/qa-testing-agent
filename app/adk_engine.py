@@ -272,6 +272,7 @@ async def run_scan(scan_id: str, url: str, run_dir: Path, emit: Callable[[dict],
     stage_elapsed: dict[str, float] = {}
     stage_counts: dict[str, int] = {}
     stage_start: dict[str, float] = {}
+    early_shots: list["ScreenshotMeta"] = []
     live_total = 0
     supervisor_text: list[str] = []
     geo_text: list[str] = []
@@ -326,6 +327,9 @@ async def run_scan(scan_id: str, url: str, run_dir: Path, emit: Callable[[dict],
                         # ai stage stays open until the geo agent finishes reasoning.
                         log("ground truth captured — geo_aeo agent reasoning over buyer questions")
                         continue
+                    if name == "capture_viewport_screenshots" and rstatus == "ok" and not early_shots:
+                        # import captures immediately so the live preview works
+                        early_shots.extend(_import_shots(resp, run_dir, log))
                     count = _resp_count(name, resp)
                     if rstatus == "blocked":
                         log(f"GUARDRAIL BLOCKED {name}: {str(resp.get('reason'))[:140]}")
@@ -477,8 +481,8 @@ async def run_scan(scan_id: str, url: str, run_dir: Path, emit: Callable[[dict],
     forms_payload = raw.get("test_form_boundaries") or {}
     geo_report = "\n".join(geo_text)
 
-    shots: list[ScreenshotMeta] = []
-    if shots_payload.get("status") == "ok":
+    shots: list[ScreenshotMeta] = list(early_shots)
+    if not shots and shots_payload.get("status") == "ok":
         shots = _import_shots(shots_payload, run_dir, log)
 
     findings: list[Finding] = []

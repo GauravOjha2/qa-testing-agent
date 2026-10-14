@@ -268,7 +268,7 @@ for the supervisor - it is NOT the final answer to the user. As your very
 last action, you MUST call the tool transfer_to_agent with
 agent_name="qa_supervisor_agent" - never end your turn without it.""",
     tools=[fetch_page_text_snapshot],
-    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0, max_output_tokens=2048),
+    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0, max_output_tokens=4096),
 )
 
 
