@@ -7,9 +7,7 @@ Pattern mirrors the employment.exe project:
   - a supervisor LlmAgent whose sub_agents are the four specialists;
     ADK gives it transfer_to_agent automatically
 
-Models: gemini-flash-latest for fast deterministic-adjacent specialists,
-gemini-pro-latest where factual judgment quality matters most (GEO/AEO
-hallucination diffing).
+Models: gemini-flash-latest everywhere (product policy: one model, no substitution). All agents run at temperature 0 with capped outputs to keep per-scan API cost minimal; tools return compact summaries to the model while full structured payloads flow to the report layer via session state.
 """
 
 from __future__ import annotations
@@ -36,7 +34,7 @@ from adk_qa_pipeline.tools import (
 )
 
 FLASH_MODEL = "gemini-flash-latest"
-PRO_MODEL = "gemini-pro-latest"
+PRO_MODEL = FLASH_MODEL  # policy: gemini-flash-latest only, no substitution
 
 SUBMIT_MARKERS = (
     'type="submit"',
@@ -149,10 +147,10 @@ Given a target URL you MUST, using only your tools and exactly once each:
 1. Call run_axe_core_audit(url) with the target URL.
 2. Call run_lighthouse_audit(url) with the target URL.
 
-Then report:
-- Every violation verbatim from tool output: severity, title, detail.
-- Silent failures (console/network) if present.
-- Core Web Vitals values vs Google's 'good' thresholds.
+Then report, strictly from the tool summaries (they return counts and top
+finding titles; the full data is persisted to artifacts automatically):
+- violation_count and each top_findings entry, verbatim.
+- Lighthouse metrics/scores and its finding_count.
 - If a tool returns status=error or status=blocked, report that honestly
   instead of inventing results.
 
@@ -163,7 +161,7 @@ supervisor - it is NOT the final answer to the user. As your very last
 action, you MUST call the tool transfer_to_agent with
 agent_name="qa_supervisor_agent" - never end your turn without it.""",
     tools=[run_axe_core_audit, run_lighthouse_audit],
-    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
+    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0, max_output_tokens=2048),
 )
 
 
@@ -196,7 +194,7 @@ for the supervisor - it is NOT the final answer to the user. As your very
 last action, you MUST call the tool transfer_to_agent with
 agent_name="qa_supervisor_agent" - never end your turn without it.""",
     tools=[capture_viewport_screenshots],
-    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
+    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0, max_output_tokens=2048),
 )
 
 
@@ -230,7 +228,7 @@ call the tool transfer_to_agent with agent_name="qa_supervisor_agent" -
 never end your turn without it.""",
     tools=[test_form_boundaries],
     before_tool_callback=prevent_form_submit_guardrail,
-    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
+    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0, max_output_tokens=2048),
 )
 
 
@@ -270,7 +268,7 @@ for the supervisor - it is NOT the final answer to the user. As your very
 last action, you MUST call the tool transfer_to_agent with
 agent_name="qa_supervisor_agent" - never end your turn without it.""",
     tools=[fetch_page_text_snapshot],
-    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
+    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0, max_output_tokens=2048),
 )
 
 
@@ -325,6 +323,8 @@ Final aggregate format (exactly this JSON shape, no markdown fences):
 
 If a specialist errored or was blocked, record its status honestly rather
 than omitting the section.""",
-    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0),
+    generate_content_config=genai_types.GenerateContentConfig(temperature=0.0, max_output_tokens=2048),
     sub_agents=[visual_qa_agent, a11y_perf_agent, forms_agent, geo_aeo_agent],
 )
+
+

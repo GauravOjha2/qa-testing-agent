@@ -87,3 +87,8 @@ def load_env() -> None:
 def gemini_api_key() -> str:
     load_env()
     return os.environ.get("GEMINI_API_KEY", "").strip()
+
+# --- ADK engine (agent-graph orchestration) ---------------------------------
+ENGINE = os.environ.get("SITESENTINEL_ENGINE", "adk").strip().lower()  # "adk" | "core"
+ADK_STALL_TIMEOUT = 300.0   # max seconds between agent events before watchdog fires
+ADK_TOTAL_BUDGET = 780.0    # hard cap for the whole agent-graph run

@@ -30,8 +30,23 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import config
-from app.engine import run_scan
 from app.jobs import JobStore, sse
+
+# Engine selection: "adk" runs the Google ADK agent graph (supervisor LlmAgent
+# + four specialists) as the orchestrator; "core" runs the deterministic
+# pipeline. Same SSE contract either way — the frontend cannot tell the
+# difference. Falls back to core if ADK is unavailable.
+_ENGINE = config.ENGINE
+if _ENGINE == "adk":
+    try:
+        from app.adk_engine import run_scan as run_scan  # noqa: F401
+    except Exception as exc:  # google-adk not installed / misconfigured
+        import traceback
+        print(f"[engine] ADK engine unavailable ({exc}); falling back to core")
+        traceback.print_exc()
+        _ENGINE = "core"
+if _ENGINE != "adk":
+    from app.engine import run_scan as run_scan  # noqa: F401
 
 app = FastAPI(title="SiteSentinel — Website QA & Vulnerability Scanner", version="1.0.0")
 
@@ -113,6 +128,7 @@ async def _drive(job) -> None:
 async def health() -> dict:
     return {
         "status": "ok",
+        "engine": _ENGINE,
         "model": config.GEMINI_MODEL,
         "ai_enabled": bool(config.gemini_api_key()),
         "axe_core": config.AXE_PATH.is_file(),

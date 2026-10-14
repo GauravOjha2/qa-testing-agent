@@ -16,6 +16,7 @@ them, so a fix in src/xoxoday_qa benefits both pipelines.
 
 from __future__ import annotations
 
+import contextvars
 import json
 import asyncio
 import os
@@ -41,6 +42,37 @@ from xoxoday_qa.playwright_utils import (  # noqa: E402
     screenshot_at_breakpoints,
     throttle,
 )
+
+# --- Bridge plumbing -------------------------------------------------------
+# When the product engine (app/adk_engine.py) drives a scan it points
+# _RUN_DIR at runs/<scan_id>/ so raw tool artifacts live with the job and
+# get swept by the same TTL. Standalone `adk web` runs fall back to
+# ARTIFACTS_DIR.
+_RUN_DIR: contextvars.ContextVar["Path | None"] = contextvars.ContextVar(
+    "adk_run_dir", default=None
+)
+
+
+def set_run_dir(path: "Path | None") -> None:
+    _RUN_DIR.set(path)
+
+
+def _artifacts_dir() -> Path:
+    run_dir = _RUN_DIR.get()
+    return (run_dir / "adk_raw") if run_dir else ARTIFACTS_DIR
+
+
+def _stash(tool_context: Any, tool_name: str, payload: dict[str, Any]) -> None:
+    """Stash the FULL payload in ADK session state so the report layer builds
+    findings deterministically, while the model only sees the compact summary
+    returned by the wrapper (this is what keeps per-scan token cost low)."""
+    if tool_context is None:
+        return
+    try:
+        tool_context.state[f"raw:{tool_name}"] = payload
+    except Exception:
+        pass  # state is a best-effort channel; the artifact file is the backup
+
 
 AXE_CORE_CDN = "https://unpkg.com/axe-core@4.10.0/axe.min.js"
 AXE_CORE_LOCAL_PATH = _REPO_ROOT / "node_modules" / "axe-core" / "axe.min.js"
@@ -151,11 +183,12 @@ def _gate(url: str) -> dict[str, Any] | None:
 def _record(tool_name: str, payload: dict[str, Any]) -> dict[str, Any]:
     """Persist each tool result as a JSON artifact so aggregation never
     depends on the LLM faithfully repeating tool output."""
-    ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+    out_dir = _artifacts_dir()
+    out_dir.mkdir(parents=True, exist_ok=True)
     slug = "".join(ch if ch.isalnum() else "_" for ch in str(payload.get("url", "")))[
         :60
     ].strip("_")
-    out = ARTIFACTS_DIR / f"{tool_name}_{slug}.json"
+    out = out_dir / f"{tool_name}_{slug}.json"
     out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
     payload["artifact"] = str(out)
     return payload
@@ -635,59 +668,96 @@ def _find_field(form: Any, field_hint: str) -> Any | None:
             continue
     return None
 
-async def run_axe_core_audit(url: str) -> dict[str, Any]:
+async def run_axe_core_audit(url: str, tool_context: Any = None) -> dict[str, Any]:
     """Run a WCAG 2.2 A/AA axe-core audit of `url` in headless Chromium.
 
     Also reports silent failures seen during load: JS console errors,
     HTTP >=400 responses, and 200-OK-with-error-payload API responses.
+    The full violation list is stashed to session state / artifact JSON;
+    this returns a compact summary (counts + top titles) to save tokens.
     Args:
         url: Fully-qualified page URL to audit.
     Returns:
-        {status, url, violation_count, findings[]}.
+        {status, url, violation_count, top_findings[], artifact}.
     """
-    return await asyncio.to_thread(_run_axe_core_audit_sync, url)
+    payload = await asyncio.to_thread(_run_axe_core_audit_sync, url)
+    _stash(tool_context, "run_axe_core_audit", payload)
+    findings = payload.get("findings", [])
+    return {
+        "status": payload.get("status"),
+        "url": url,
+        "violation_count": payload.get("violation_count", len(findings)),
+        "top_findings": [f"{f.get('severity')}: {f.get('title')}" for f in findings[:5]],
+        "artifact": payload.get("artifact"),
+        "error": payload.get("error"),
+        "reason": payload.get("reason"),
+    }
 
 
-async def run_lighthouse_audit(url: str) -> dict[str, Any]:
+async def run_lighthouse_audit(url: str, tool_context: Any = None) -> dict[str, Any]:
     """Measure Core Web Vitals (LCP/CLS/INP) and perf/a11y scores for `url`
     via the Lighthouse CLI.
 
-    Flags metrics worse than Google's 'good' thresholds.
+    Flags metrics worse than Google's 'good' thresholds. Full payload is
+    stashed; this returns a compact summary.
     Args:
         url: Fully-qualified page URL to audit.
     Returns:
-        {status, url, metrics{}, scores{}, findings[]}.
+        {status, url, metrics{}, scores{}, finding_count, top_findings[]}.
     """
-    return await asyncio.to_thread(_run_lighthouse_audit_sync, url)
+    payload = await asyncio.to_thread(_run_lighthouse_audit_sync, url)
+    _stash(tool_context, "run_lighthouse_audit", payload)
+    findings = payload.get("findings", [])
+    return {
+        "status": payload.get("status"),
+        "url": url,
+        "metrics": payload.get("metrics", {}),
+        "scores": payload.get("scores", {}),
+        "finding_count": len(findings),
+        "top_findings": [f.get("title") for f in findings[:5]],
+        "error": payload.get("error"),
+        "reason": payload.get("reason"),
+    }
 
 
-async def fetch_page_text_snapshot(url: str) -> dict[str, Any]:
+async def fetch_page_text_snapshot(url: str, tool_context: Any = None) -> dict[str, Any]:
     """Extract textual ground truth of `url`: meta description, JSON-LD
     block summary, and first ~4000 chars of visible body text.
 
-    Used as the fact base for hallucination/consistency checks.
+    Used as the fact base for hallucination/consistency checks, so the
+    excerpt is returned in full to the model (it is the reasoning input).
     Args:
         url: Fully-qualified page URL to read.
     Returns:
         {status, url, meta_description, jsonld_blocks[], body_text_excerpt}.
     """
-    return await asyncio.to_thread(_fetch_page_text_snapshot_sync, url)
+    payload = await asyncio.to_thread(_fetch_page_text_snapshot_sync, url)
+    _stash(tool_context, "fetch_page_text_snapshot", payload)
+    return payload
 
 
-async def capture_viewport_screenshots(url: str) -> dict[str, Any]:
+async def capture_viewport_screenshots(url: str, tool_context: Any = None) -> dict[str, Any]:
     """Capture full-page screenshots of `url` at mobile/tablet/desktop
     widths plus a deterministic horizontal-overflow probe per breakpoint.
 
     Args:
         url: Fully-qualified page URL to capture.
     Returns:
-        {status, url, breakpoints{name:{screenshot,overflowPx,...}}, findings[]}.
+        {status, url, breakpoints{name:{screenshot,overflowPx,...}}, finding_count}.
     """
-    return await asyncio.to_thread(
-        _capture_viewport_screenshots_sync, url)
+    payload = await asyncio.to_thread(_capture_viewport_screenshots_sync, url)
+    _stash(tool_context, "capture_viewport_screenshots", payload)
+    return {
+        "status": payload.get("status"),
+        "url": url,
+        "breakpoints": payload.get("breakpoints", {}),
+        "finding_count": len(payload.get("findings", [])),
+        "error": payload.get("error"),
+        "reason": payload.get("reason"),
+    }
 
 
-async def test_form_boundaries(url: str, selector: str = "form") -> dict[str, Any]:
+async def test_form_boundaries(url: str, selector: str = "form", tool_context: Any = None) -> dict[str, Any]:
     """Fill visible inputs of the form at `url` with internationalized
     boundary values and read aria-invalid validation state.
 
@@ -698,5 +768,6 @@ async def test_form_boundaries(url: str, selector: str = "form") -> dict[str, An
     Returns:
         {status, url, selector, case_results[], findings[]}.
     """
-    return await asyncio.to_thread(
-        _test_form_boundaries_sync, url, selector)
+    payload = await asyncio.to_thread(_test_form_boundaries_sync, url, selector)
+    _stash(tool_context, "test_form_boundaries", payload)
+    return payload
