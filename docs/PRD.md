@@ -1,68 +1,79 @@
-# PRD — Xoxoday QA Agent
+# PRD — SiteSentinel
 
 ## Problem
 
-Static site checkers (uptime pings, link crawlers, HTML validators) cannot catch
-four classes of defects that actually hurt a B2B SaaS business:
+A marketing or product page can be *up* and still be losing money. Uptime pings, link
+crawlers and HTML validators cannot see the four classes of defect that actually cost a
+B2B SaaS business:
 
-1. **Visual/brand breakage** — layout collapses at some viewport, localized text
-   overflows its container, brand elements render wrong. Pixel-diff tools drown
-   in false positives on marketing sites that change content daily.
-2. **Form business-logic failures** — a lead-gen form that accepts garbage
-   (invalid emails, absurd values) or rejects legitimate international input
-   pollutes the sales pipeline silently.
-3. **AI-answer mismatch (GEO/AEO)** — buyers increasingly ask ChatGPT/Gemini
-   about products. If AI engines describe the product differently than the
-   site does, pipeline leaks before the site is ever visited.
-4. **Silent failures** — JS console errors, blocked scripts, 200-OK-with-error-payload
-   responses. Nothing 404s, nothing visibly breaks, and a human clicking around
-   will never notice.
+1. **Broken experience at some viewport** — content scrolls sideways on a phone, a hero
+   collapses on a tablet. Nobody notices because everyone reviews on a laptop.
+2. **Silent form failure** — a lead form accepts `not-an-email`, or rejects a legitimate
+   international name, and the visitor quietly leaves. Nobody finds out until pipeline
+   misses appear a quarter later.
+3. **Accessibility debt** — unlabelled inputs, missing alt text, failing contrast. This
+   blocks real users, invites WCAG/ADA complaints, and is invisible to the team that
+   built the page.
+4. **Answer-engine invisibility** — buyers now ask an AI "what does this cost / who is it
+   for". If the page never states those facts, the answer engine guesses, and the guess
+   becomes the buyer's truth.
 
-## Target users
+Existing tools cover fragments of this (axe in devtools, Lighthouse in CI, a screenshot
+service) but nothing hands a non-engineer one prioritised document they can forward.
 
-- **Xoxoday engineering** — actionable defect list with selectors and evidence.
-- **Xoxoday marketing/growth** — the CSP-blocked-tracker and AI-mismatch findings
-  are revenue-adjacent, not just code bugs.
-- **The submitting engineer** — demonstrates judgment on an ambiguous, unscoped
-  task touching someone else's production site.
+## Users
 
-## Scope
+| User | Wants | Success looks like |
+|---|---|---|
+| Founder / PM | "Is my page actually OK?" | A one-page verdict and a short risk list they understand |
+| Growth / SEO owner | "Why don't AI answers cite us?" | Concrete missing facts and the fix, in buyer language |
+| Engineer receiving the report | Reproduce the bug fast | Selector, snippet, failing rule, expected fix |
+| Agency / consultant | Repeatable client deliverable | PDF + JSON for the same price of a URL paste |
 
-**In scope:** scanning public marketing/product pages page-by-page with four
-specialist checks, orchestrated as a Google ADK multi-agent system (supervisor
-+ 4 specialists), deduplicating results, and producing an executive-ready PDF
-report with screenshot evidence. Xoxoday properties are the primary target,
-but the pipeline is URL-agnostic — per-domain buyer questions make any target
-auditable without code changes.
+## Jobs to be done
 
-**Out of scope:** load testing, authenticated-area scanning, exploiting any
-vulnerability, automated exploitation/remediation, mobile-native apps.
+* Paste a URL, wait ~2–3 minutes, receive a report. No account, no install, no CLI.
+* Trust that the scan was polite and non-destructive — this runs against *other people's*
+  production sites.
+* Show the evidence, not just the verdict: screenshots, selectors, measured numbers.
+* Get the same answer twice. A flaky scanner is a toy.
 
-## Functional requirements
+## Scope — v1 (shipped)
 
-| # | Requirement |
-|---|---|
-| F1 | Discover pages via sitemap or explicit URL list; classify each by page type |
-| F2 | Screenshot every page at mobile/tablet/desktop and judge renders with a vision model against a bounded rubric |
-| F3 | Probe forms with boundary/i18n values and read validation state **without ever submitting** |
-| F4 | Diff JSON-LD/meta claims against rendered content; ask configured LLM engines buyer questions and diff answers against page ground truth |
-| F5 | Run WCAG 2.2 AA automated audit (axe-core), Core Web Vitals (Lighthouse), and a console/network monitor per page |
-| F6 | Persist raw findings as inspectable JSON — every tool response harvested from the ADK event stream, deduped and ranked across checks |
-| F7 | Render a self-contained PDF report (`generate_pdf.py`): KPI summary, top risks, embedded evidence screenshots (pre-sliced for print), full findings list ranked by severity, safety-compliance statement. Methodology/limitations live in README + docs |
+**In:** landing → live progress → results → PDF/JSON download. Five stages across four
+agents (captures, accessibility, Core Web Vitals, form safety, AI-answer readiness).
+Severity model, dedup, deterministic finding IDs. Fail-closed robots.txt. Honest
+User-Agent. 1.5s throttle. SSRF guard. No-submit guardrail in three layers. All AI on
+`gemini-flash-latest`.
 
-## Non-functional requirements
+**Out (deliberately):** multi-page crawling and site maps, authenticated flows, PDF/DOCX
+targets, historical diffing between scans, scheduled recurring scans, accounts/teams,
+long-term artifact storage, JS-bundle or dependency-vulnerability analysis.
 
-- **Safety first:** robots.txt compliance (fail-closed), 1.5s/request throttle,
-  honest contactable User-Agent, tagged test data, never-complete-a-submission.
-- **Honesty:** when a layer didn't run (no API key, tool unavailable), the
-  findings say so explicitly. No overstated coverage.
-- **Zero infrastructure:** full pipeline runs on one machine; no cloud account needed.
-- **Cost ceiling:** one Gemini API key drives all AI layers; a handful of small
-  model calls per page (most checks are deterministic tool execution).
+## Requirements
 
-## Success criteria
+| # | Requirement | How it is met |
+|---|---|---|
+| R1 | Any public URL, no install | FastAPI + static SPA, one input |
+| R2 | Visible progress, honest failure | SSE stage events; a failed stage reports `failed`, never silently passes |
+| R3 | Evidence for every finding | Selector + snippet + measured value + embedded capture |
+| R4 | Non-destructive by construction | No submit path (AST-tested), non-GET requests aborted, read-only browsing |
+| R5 | Permission before access | robots.txt fetched first, fail-closed |
+| R6 | Executive-legible output | A4 PDF: cover, KPI cards, summary, risks, evidence, safety statement |
+| R7 | Machine-legible output | `report.json` rendered from the same result object |
+| R8 | Reproducible | Deterministic finding IDs, dedup, stable sort |
+| R9 | One model policy | `gemini-flash-latest` for every AI layer, one key |
+| R10 | Deployable | Container for the engine, static bundle for the UI |
 
-- Every finding in the report traces to something that actually executed.
-- Findings reproduce across independent runs (validated: visual findings from
-  two separate sessions matched).
-- A non-engineer (founder) can read the PDF top-to-bottom without jargon.
+## Non-functional targets
+
+* Scan completes in ~1–3 minutes on a normal marketing page.
+* UI: responsive from 360px, keyboard operable, `aria-live` progress, reduced-motion safe.
+* Report: A4, print-safe colours, multi-page with no orphaned cards.
+* Engine: per-stage timeouts so one slow stage cannot hang a scan.
+
+## Success signals
+
+* A scan of the bundled fixture produces findings across all four agents.
+* `scripts/verify_e2e.py` passes end to end, including `forms_submitted == 0`.
+* A stakeholder can act on the PDF without asking an engineer what a finding means.

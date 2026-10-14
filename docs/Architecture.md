@@ -1,102 +1,112 @@
-# Architecture — QA Testing Agent (Google ADK)
+# Architecture — SiteSentinel
 
-## Pipeline flow
+## Deployment topology
 
-```
-adk_qa_pipeline/main.py  (--url <target>)
-  │
-  ├─► seeds session state {target_url, buyer_questions}
-  │
-  ├─► qa_supervisor_agent (gemini-flash-latest, temperature=0)
-  │     transfers to each specialist exactly once, passing the URL verbatim:
-  │
-  │     visual_qa_agent ──► capture_viewport_screenshots(url)
-  │                          full-page PNGs @ mobile/tablet/desktop
-  │                          + deterministic horizontal-overflow probe
-  │     a11y_perf_agent ───► run_axe_core_audit(url)      WCAG 2.2 A/AA,
-  │                          run_lighthouse_audit(url)    LCP/CLS/INP,
-  │                                                       silent failures
-  │     forms_agent ───────► test_form_boundaries(url)   boundary/i18n fills,
-  │                          [guardrail]                 aria-invalid reads,
-  │                                                      submit IMPOSSIBLE
-  │     geo_aeo_agent ─────► fetch_page_text_snapshot(url) then self-consistency
-  │                          hallucination diff against per-domain questions
-  │
-  ├─► every specialist ends with transfer_to_agent(qa_supervisor_agent)
-  │
-  └─► main.py harvests tool responses from the ADK event stream,
-      dedupes findings, ranks severity -> local_findings_adk/adk_run_*.json
-
-adk_qa_pipeline/generate_pdf.py
-  └─► newest adk_run_*.json -> KPI cards, top risks, evidence screenshots
-      (pre-sliced to page-sized chunks), severity cards -> ADK-QA-Report_<slug>.pdf
-```
-
-## Folder structure
+The scanner needs a real Chromium, the Lighthouse CLI, a writable artifact directory and a
+multi-minute budget. None of that fits a serverless function, so the system is split:
 
 ```
-adk_qa_pipeline/
-  __init__.py          exports root_agent (adk web compatibility)
-  agents.py            4 specialists + supervisor + prevent_form_submit_guardrail
-  tools.py             execution layer: robots gate, throttle reuse, axe/Lighthouse/
-                       screenshots/forms/ground-truth tools, per-domain buyer questions
-  main.py              async runner; harvests event stream; aggregates JSON log
-  generate_pdf.py      PDF renderer with page-sized screenshot slicing
-src/xoxoday_qa/        shared core the tools import (single source of truth):
-  config.py            SafetyConfig + RunConfig; loads .env
-  crawler.py           check_robots_allowed (fail-closed), classification helpers
-  playwright_utils.py  throttle(), PageMonitor, browser_session(), goto_and_settle(),
-                       screenshot_at_breakpoints()
-  models.py, dom_utils.py   shared dataclasses / meta reader
-tests/test_crawler.py  unit tests for classification, navigation, DOM helpers
-docs/                  PRD, Architecture, Rules, Phases, Design, Memory
-local_findings_adk/    run artifacts (gitignored): tool payloads + aggregated log
-screenshots/local/     breakpoint captures (gitignored; regenerated per run)
-.env                   GEMINI_API_KEY - GITIGNORED, never commit
+        ┌──────────────────────────────┐        ┌───────────────────────────────────┐
+        │  UI  (static, no framework)  │  HTTPS │  Engine  (container, Cloud Run)   │
+        │  Vercel or served by engine  │───────►│  FastAPI + Playwright + Chrome    │
+        │  index.html app.css app.js   │  SSE   │  Lighthouse CLI · axe-core        │
+        └──────────────────────────────┘        └────────────────┬──────────────────┘
+                                                                 │ JSON mode
+                                                                 ▼
+                                                    ┌────────────────────────┐
+                                                    │ gemini-flash-latest    │
+                                                    └────────────────────────┘
 ```
 
-Legacy raw-Python pipeline (agents/store/synthesis/scripts) lives on the
-`procedural-pipeline` branch, not here.
+The UI talks to the engine over `window.SENTINEL_API` (written at build time into
+`static/app-config.js`). Empty means same-origin, which is what you get when the engine
+serves the UI itself. Cross-origin access is allowed by `CORSMiddleware` and locked down
+with `SITESENTINEL_ALLOWED_ORIGINS`.
 
-## Technical stack
+The progress stream is deliberately a **direct** browser → engine SSE connection rather
+than a proxy through a serverless function, so a 2–3 minute scan never hits a function
+timeout or a proxy buffer.
 
-| Layer | Choice | Why |
+## Request flow
+
+```
+POST /api/scan ──► validate (scheme, host, SSRF) ──► JobStore.create
+                                                       │
+                                    asyncio.create_task(_drive(job))
+                                                       │
+GET /api/scan/{id}/events ◄── SSE ◄──── job.emit(event)  (replay history, then live)
+                                                       │
+GET /api/scan/{id}/report.pdf ◄── FileResponse ◄── runs/<id>/report.pdf
+```
+
+## Components
+
+| Module | Responsibility |
+|---|---|
+| `server.py` | routes, URL validation + SSRF guard, CORS, SSE endpoint, artifact serving, static UI mount |
+| `app/engine.py` | the orchestrator: pre-flight robots check, stage order, per-stage timeout + isolation, dedup, artifact writing |
+| `app/jobs.py` | in-process job registry, event history, listener fan-out, TTL sweep of `runs/` |
+| `app/stages/*` | the four agents' five stages (see below) |
+| `app/report.py` | builds the A4 HTML and prints it to PDF with headless Chromium |
+| `app/synthesis.py` | executive summary + top risks, with a deterministic fallback |
+| `app/llm.py` | the only AI client in the codebase: `gemini-flash-latest`, JSON mode, retries |
+| `app/robots.py`, `app/ratelimit.py` | permission and politeness primitives |
+
+## Stage contracts
+
+Every stage is `async (browser, url, …) -> list[Finding]` and is wrapped by the engine in
+`asyncio.wait_for` with a per-stage budget. A stage that raises is recorded as `failed`
+with its exception text and the scan continues — a partial honest report beats a hard
+error. Statuses emitted to the UI: `ok`, `degraded` (worked, but via a fallback), `failed`.
+
+| Stage | Key | Notes |
 |---|---|---|
-| Language | Python 3.13 | team-familiar; Playwright + ADK first-class support |
-| Agent framework | google-adk (>=1.0) | LlmAgent sub-agent transfers, before_tool_callback guardrails, state-injected instructions |
-| Models | gemini-flash-latest (specialists+supervisor), gemini-pro-latest (GEO/AEO judgment) | fast/cheap routing where determinism matters, stronger reasoning for factual diffing |
-| Browser automation | Playwright (sync API inside `asyncio.to_thread`) | real Chromium; worker threads dodge the sync-API-in-async-loop restriction |
-| A11y | axe-core 4.10 (npm bundle injected locally) | site CSP can't block a local injection |
-| Perf | Lighthouse CLI via npx subprocess | Core Web Vitals without Node API plumbing |
-| Persistence | local JSON artifacts per tool call + merged run log | inspectable, diffable, zero infra |
-| Report | HTML -> PDF via Playwright `page.pdf()`; Pillow pre-slicing | tall captures can't glitch Chromium's print tiler |
+| Captures + overflow | `screenshots` | one context per viewport, lazy-load scroll pass, `scrollWidth - innerWidth` probe, Pillow thumbnail generation |
+| Accessibility | `accessibility` | axe-core injected from `node_modules/axe-core/axe.min.js`, `wcag2a/aa`, `wcag21a/aa`, `wcag22aa`; axe `impact` → severity |
+| Core Web Vitals | `vitals` | Lighthouse CLI (mobile form factor) parsed for LCP/CLS/TBT/FCP/score; falls back to a `PerformanceObserver` lab measurement → `degraded` |
+| Form safety | `forms` | three guardrail layers, per-field boundary/invalid/i18n probes, reads `checkValidity()` / `validationMessage` / `aria-invalid` |
+| AI answer check | `ai` | ground-truth scrape (title, meta, headings, JSON-LD, CTAs, price strings, body copy) + desktop screenshot → one multimodal call; also produces visual-review findings |
 
-## Key design decisions
+## Data model
 
-- **Aggregation trusts tools, not prose:** main.py harvests every
-  `function_response` payload from the event stream; the supervisor's JSON
-  summary is decorative, the structured log is authoritative.
-- **Guardrail is defense-in-depth:** `prevent_form_submit_guardrail`
-  (before_tool_callback, kwarg `tool_context=` in ADK >=1.x) blocks submit
-  intent at four levels - submit-named tools, click-intent x submit selectors
-  (name OR args, escape-normalized), action="submit" args, and boundary tests
-  pointed at a submit control. The tool itself also never touches submit.
-- **Deterministic orchestration contract:** supervisor temperature=0 with two
-  legal outputs (a transfer call, or the final aggregate only after all four
-  completion markers); specialists must end by calling
-  `transfer_to_agent(qa_supervisor_agent)` - prose handbacks end the run.
-- **Sync Playwright off-loop:** every tool is an `async def` wrapper over
-  `asyncio.to_thread(sync_impl)`; worker threads have no running loop.
-- **Per-domain configurability via session state:** `{buyer_questions}` is
-  injected into the GEO/AEO instruction from state seeded by main.py;
-  `BUYER_QUESTIONS_BY_DOMAIN` in tools.py is the single place to customize.
-- **State-injection safety:** only geo_aeo's instruction contains a `{state}`
-  placeholder; all instructions audited so literal JSON braces pass through
-  untouched (`_is_valid_state_name` gate).
-- **Robots gate fail-closed, reused:** every tool call runs
-  `check_robots_allowed` before navigation; unreachable robots.txt aborts.
-- **PDF print-tile workaround:** screenshots are width-normalized and sliced
-  into ~1.45 aspect chunks before embedding; multi-page-tall images otherwise
-  render black bands in Chromium's printer.
-- **Cloud removed deliberately** (see Phases.md); legacy pipeline preserved on
-  its own branch rather than deleted from history.
+```
+Finding   id (sha1 of category+rule+selector) · category · severity · title · detail
+          evidence{} · recommendation
+ScanResult scan_id · target_url · final_url · scanned_at · elapsed_seconds
+          user_agent · model · severity_counts · findings[] · top_risks[]
+          executive_summary · screenshots[] · vitals{} · stages[] · safety{}
+```
+
+`severity_counts` is derived from `findings`, never stored separately, so the KPI cards and
+the finding list cannot drift. `report.json` is a straight serialization of `ScanResult`;
+`report.pdf` is rendered from the same object.
+
+## Severity mapping
+
+| Source | Rule |
+|---|---|
+| axe-core | `critical → critical`, `serious → high`, `moderate → medium`, `minor → low` |
+| Overflow | > 40px → `high`, otherwise `medium` |
+| Core Web Vitals | beyond the "poor" threshold → `critical`, beyond "good" → `high` |
+| Forms | invalid input accepted with no feedback → `high`; unannounced error → `medium`; unbounded text field → `low` |
+| GEO/AEO | unanswerable buyer question → `high` for pricing, else `medium`; wrong-claim risk → model-assigned |
+| Visual review | model-assigned, default `medium` |
+
+## Concurrency and isolation
+
+* One browser per scan; one context per stage/viewport, always closed in a `finally`.
+* A single `RateLimiter` instance per scan serialises every request to the target origin.
+* Jobs are in-process, which makes a single instance the simplest topology. For multiple
+  instances, back `JobStore` with Redis or Firestore and move `runs/` to a bucket — the
+  `emit`/`stream` interface is the only thing that needs to change.
+
+## Failure behaviour
+
+| Failure | Result |
+|---|---|
+| robots.txt unreachable / 5xx / disallow | scan refused with a specific reason shown in the UI |
+| A stage raises or times out | that stage reports `failed`; the rest of the scan completes |
+| Lighthouse missing | `vitals` reports `degraded`, observer numbers used and labelled |
+| `GEMINI_API_KEY` absent | `ai` reports `degraded` with an "AI layer disabled" finding |
+| Model call fails mid-scan | synthesis falls back to a deterministic summary |
+| SSE drops mid-scan | client polls `GET /api/scan/{id}` once and recovers the finished result |

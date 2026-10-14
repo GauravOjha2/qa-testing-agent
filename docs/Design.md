@@ -1,58 +1,96 @@
-# Design — visual system for the deliverable report
+# Design — SiteSentinel
 
-The product's only user-facing surface is the PDF report
-(`adk_qa_pipeline/generate_pdf.py`). Design goal: a non-engineer reads it
-top-to-bottom; severity is legible at a glance; evidence is embedded, not linked.
+Two surfaces share one visual language: the **web app** (landing, progress, results) and
+the **A4 PDF report**.
 
-## Color palette
+## Direction
 
-| Token | Hex | Use |
+Paper and ink. The page should read like a document written by someone who knows the
+subject — not a landing page performing enthusiasm. That means: one neutral background,
+near-black type, hairline rules instead of boxes and shadows, generous space, and colour
+reserved almost entirely for severity.
+
+Concretely, the following were deliberately removed after the first pass, because they
+were noise rather than design: the aurora/orb/meteor backdrop, the hero particle canvas,
+gradient-filled headline text, gradient buttons, a tool marquee, a "stack" grid, orbiting
+dots, border beams, magnetic buttons, 3D card tilt, a serif italic accent, and every badge
+naming an implementation detail (`Playwright`, `axe-core`, `gemini-flash-latest`). None of
+that told the user anything; all of it competed with the content.
+
+## Tokens (`static/app.css`)
+
+| Token | Value | Use |
 |---|---|---|
-| Cover bg | `#111827` | header band |
-| Cover text | `#f9fafb` / `#9ca3af` | title / meta lines |
-| Ink | `#1f2937` | body text |
-| Detail | `#374151` | finding detail paragraphs |
-| Muted | `#6b7280` | tool labels, captions |
-| Faint | `#9ca3af` | tags line |
-| Hairline | `#e5e7eb` | card/table/figure borders |
-| Panel bg | `#f3f4f6` | appendix `<pre>` block |
-| Safety bg | `#f0fdf4` + `#bbf7d0` border + `#166534` text | compliance footer |
-| Critical | `#dc2626` | chip fill, left border, KPI number |
-| High | `#ea580c` | chip + left border, KPI number |
-| Medium | `#d97706` | chip + left border, KPI number |
-| Low | `#64748b` | chip + left border |
-| Info | `#0f766e` | chip + left border |
+| `--paper` | `#fafaf9` | page background |
+| `--card` | `#ffffff` | panels, inputs, gallery frames |
+| `--ink` | `#0f0f0e` | headings, primary buttons, progress fill |
+| `--ink-2` | `#57534e` | body copy |
+| `--ink-3` | `#8a8781` | labels, meta, mono captions |
+| `--line` / `--line-2` | `#e7e5e4` / `#d6d3d1` | hairlines, input borders |
+| `--accent` | `#2563eb` | focus ring, running state only |
+| `--crit` `--high` `--med` `--low` `--ok` | `#d92d20` `#c2410c` `#a16207` `#175cd3` `#087443` | severity, shared with the PDF |
 
-Severity is carried by **two cues** (chip fill + 4px left border) plus the label
-text itself — never by color alone.
+**Inter** for everything structural; **JetBrains Mono** for values the machine produced —
+URLs, durations, metric numbers, finding ids, stage status. Radii stay small (8–12px):
+pills read consumer, and this is a tool.
 
-## Typography
-
-- Stack: `'Segoe UI', Arial, sans-serif`
-- Cover H1 21pt; H2 13pt with 2px `#111827` underline; body 10.5pt / 1.45
-- Chips 7pt bold, letter-spacing `.04em`; finding titles 10pt semibold;
-  details 9pt; tags/captions/tool labels 7.5–8pt; appendix 7.5pt monospace
+The palette is not invented. It is the pattern that holds across the reference set used to
+design this: near-monochrome surfaces, one accent, mono for data (shadcn, Refero, Component
+Gallery, mapcn, Minimal Gallery all sit in the same neutral range).
 
 ## Layout
 
-- A4 via Playwright `page.pdf()`; margins 16/16/13/13mm; `print_background: true`
-- Section order: dark cover card (target, timestamp, pipeline, elapsed) →
-  KPI row (total / critical / high / medium / tool-runs-ok, colored numbers) →
-  top risks list → evidence captures → all findings → appendix
-  (supervisor aggregate, truncated) → green safety-compliance box
-- Finding cards: 1px hairline border, 4px severity left border, 6px radius;
-  header row = severity chip · title · italic source-tool name;
-  `page-break-inside: avoid`
-- Screenshots are **pre-sliced**: width-normalized to 900px, chopped into
-  aspect-1.45 JPEG chunks (q82) so no `<img>` spans multiple printed pages —
-  Chromium's print tiler otherwise renders multi-page-tall images as black
-  bands. Captions read "automated capture (part N/M)" — honest about provenance.
-- Output: `ADK-QA-Report_<slug>.pdf` at repo root, slug derived from the
-  target URL (filename-agnostic, works for any audited domain).
+* 1080px measure, 60px sticky header with a single hairline.
+* Hero is left-aligned, max 760px, one headline, one sentence, one input row, one line of
+  plain reassurance. No badge, no chip row, no scroll cue.
+* Sections are separated by 104px of space and a hairline, each with a small uppercase
+  label rather than a decorated heading.
+* "What it checks" is a five-row definition list (index · name · description) — a table is
+  the honest shape for a list of checks.
+* Safety is a 2×2 bordered grid of four one-line claims.
+* The report section pairs the real PDF cover with four short bullets.
 
-## Voice
+## Motion
 
-Plain English over jargon. Every issue answers three questions: what did we
-see, why should the business care, what's the fix. Uncertainty is stated
-("needs manual confirmation"), never hidden. The safety footer states exactly
-what was and wasn't done to the site.
+Kept, because each one communicates state or craft:
+
+| Effect | Where | Why |
+|---|---|---|
+| Hover lift on the primary button | all views | affordance |
+| Progress fill + blinking rail marker | progress | which stage is running |
+| Live capture preview with a slow sweep line | progress | the target page, as it is captured |
+| Rolling counters | progress + results | numbers land instead of appearing |
+| Section reveal on scroll | landing | orientation, once, subtle |
+| Staggered finding entrance | results | shows the list is fresh |
+
+Everything above collapses under `prefers-reduced-motion`.
+
+## States
+
+Loading (hero → progress), empty ("Nothing in this run met a reporting threshold"), degraded
+(a stage marked `~` with the engine's own reason in its detail line), error (a panel with the
+engine's message), success (results). Each transition scrolls to the top of the new view.
+
+## Accessibility of the UI
+
+Semantic landmarks, skip link, labelled input, `role="progressbar"` with live `aria-valuenow`,
+`aria-live="polite"` on the stage list, real buttons and links, visible focus rings, and ink on
+paper at AA contrast everywhere.
+
+## The PDF (`app/report.py`)
+
+A4, rendered by Chromium's print pipeline from HTML + CSS.
+
+1. **Cover** — dark, full bleed: brand line, headline, target URL, scan meta, four KPI cards,
+   a "what was checked" block, and the safety rules footer.
+2. **Executive summary + top risks** — model-written, two sentences, deterministic fallback.
+3. **Core Web Vitals + stage table** — measured numbers, per-stage status and timing.
+4. **Findings** — severity-ordered cards with a coloured rail, category, deterministic id,
+   evidence block and a concrete fix.
+5. **Evidence gallery** — embedded captures with viewport size and overflow verdict.
+6. **Safety & compliance statement** — robots verdict, throttle, User-Agent, the three-layer
+   no-submit policy with the recorded submission count, data handling, model policy.
+
+Pillow generates the thumbnails that get embedded, keeping the PDF near 0.5 MB with three
+full-page captures inside it. The report stays dark on purpose: it is a document, and it is
+the one surface where a coloured cover carries meaning.

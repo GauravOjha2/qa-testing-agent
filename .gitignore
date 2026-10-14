@@ -13,7 +13,10 @@ node_modules/
 report.html
 Xoxoday-QA-Report.html
 
-# Run artifacts
+# Run artifacts (scan outputs, evidence captures)
+runs/
+local_verify/
+.scanid
 local_findings/
 local_findings_adk/
 screenshots/

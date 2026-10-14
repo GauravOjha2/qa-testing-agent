@@ -1,82 +1,50 @@
-# Rules — boundaries for any AI working on this repo
+# Rules — boundaries for anyone (human or AI) working on this repo
 
-Applies to the ADK pipeline on `main`. The frozen `procedural-pipeline`
-branch is reference-only; these rules govern how `main` evolves.
+## Hard safety rules — never violate
 
-## Hard safety rules (never violate)
+1. **Never create a code path that can submit a form.** No `submit()`, no
+   `requestSubmit()`, no clicking a submit control, no pressing Enter inside a form. The
+   Guard agent fills fields and reads the DOM's validation state; that is all.
+   `tests/test_scanner_core.py::test_forms_stage_has_no_submit_call_path` parses the stage's
+   AST and fails the suite if this regresses. Keep all three layers intact: the absent code
+   path, the init-script stubs + capture-phase cancel, and `block_mutations=True` on the
+   browser context.
+2. **robots.txt is fail-closed.** Never "fall back to allow" on a timeout, DNS error or 5xx.
+   Only a genuine 404 (or another 4xx meaning "no rules published") may allow a scan.
+3. **Keep the User-Agent honest and contactable** (`app/config.py::USER_AGENT`). Never spoof
+   a browser or a search engine.
+4. **Keep the throttle.** `RateLimiter` spaces requests to the target origin by
+   `THROTTLE_SECONDS` (1.5s). Do not add a request path that bypasses it.
+5. **Keep the SSRF guard.** Non-HTTP schemes, loopback, private ranges, link-local and
+   metadata hosts stay rejected. `SITESENTINEL_ALLOW_PRIVATE_TARGETS` is a dev/CI flag and
+   must never be enabled in a public deployment.
+6. **Do not exfiltrate scan data.** Findings stay on the scan host; nothing is posted to a
+   third party. Report evidence must not contain host filesystem paths.
 
-1. **NEVER complete a real form submission.** Submission is impossible by
-   construction, twice over: `prevent_form_submit_guardrail`
-   (`agents.py`, a `before_tool_callback` matching submit intent across tool
-   name + arguments, escape-normalized) and the tool policy in
-   `tools.py::test_form_boundaries` (fills fields, reads `aria-invalid`,
-   never touches submit). Do not weaken either layer, do not "temporarily"
-   bypass the guardrail, do not write a test that submits.
-2. **Respect robots.txt, fail closed.** Every tool call re-checks via
-   `_gate()` → `crawler.check_robots_allowed`; unreachable robots.txt aborts
-   the call. Never flip this default to allow.
-3. **Keep the throttle.** `SAFETY.min_delay_seconds = 1.5` between page loads.
-   Do not parallelize page loads, do not lower the delay.
-4. **Honest identification.** The contactable User-Agent stays. Never spoof a
-   normal browser UA.
-5. **Tag all test data.** Values that could reach a backend get the
-   `QA-Agent-Test — please disregard` marker prefix.
-6. **Secrets never enter git.** `.env` is gitignored. Never hardcode API keys,
-   never echo key values into logs/findings/reports. Artifacts
-   (`local_findings_adk/`, `screenshots/`, `*.pdf`) are gitignored too —
-   regenerate, don't commit.
+## AI layer rules
 
-## Honesty rules
+1. **`gemini-flash-latest` only.** Every AI layer (GEO/AEO review, visual review, executive
+   synthesis) goes through `app/llm.py`. No Gemini Pro, no other provider, no silent model
+   substitution. One `GEMINI_API_KEY` drives all of it.
+2. **Degrade, never crash.** A missing key, a timeout or a malformed reply must leave a
+   complete report: mark the stage `degraded`, add a labelled finding, and fall back to the
+   deterministic summary.
+3. **No invented facts.** Prompts must instruct the model to answer only from the scraped
+   ground truth and to report a gap when the page does not state a fact.
 
-7. **No fabricated findings.** If a check didn't run (blocked load, missing
-   key, tool error), the finding/status says so. Tool payloads carry real
-   status fields; the aggregator trusts them.
-8. **Trust tools, not prose.** The structured log is built from harvested
-   function responses, never from the supervisor's narrative. Keep it that way.
-9. **Coverage claims must match execution.** Pass findings record which layers
-   actually ran; the PDF safety footer states exactly what was done to the site.
-10. **Verify before reporting.** Surprising findings (e.g. a deprecated
-    `<blink>` tag) get confirmed against the live DOM before entering a report.
+## Engineering rules
 
-## Library & code rules
-
-11. Model calls are defined declaratively in `agents.py` (LlmAgent + model +
-    GenerateContentConfig); no ad-hoc SDK generation calls sprinkled in tools.
-    `google.genai.types` is config-only.
-12. Browser work goes through `xoxoday_qa/playwright_utils.py` helpers
-    (`throttle`, `goto_and_settle`, `PageMonitor`, breakpoint capture) so
-    safety logic exists once.
-13. **Sync Playwright never runs inside the asyncio loop.** Tools wrap
-    blocking implementations in `asyncio.to_thread`.
-14. ADK contracts are exact: guardrail callbacks accept `tool_context=` (that
-    kwarg name matters); Agents reject unknown constructor fields; instruction
-    `{placeholders}` must exist in session state or seeding fails.
-15. Specialists end with `transfer_to_agent(qa_supervisor_agent)`; supervisor
-    and specialists stay at temperature=0 for deterministic orchestration.
-16. New Python deps need a reason in the PR/commit; prefer stdlib. Node deps:
-    axe-core only (package.json).
-17. One failing tool never kills the run: tools catch their own exceptions and
-    return structured error payloads the aggregator records honestly.
-18. Type hints throughout; comments explain *why*, not *what*.
-
-## What an AI should NOT do here
-
-- Re-introduce cloud/GCP code (removed deliberately; see Phases.md/Memory.md).
-- Merge or cherry-pick from `procedural-pipeline` onto `main`.
-- Blind `git add -A` — review staged files (legacy copies exist locally,
-  excluded via `.git/info/exclude`, but exclusions are not a substitute for
-  review).
-- Embed multi-page-tall screenshots raw in the PDF; route through
-  `slice_screenshot()` (black-band glitch).
-- Widen crawler `_TYPE_HINTS` regexes without adding a classification test.
-- Drop the raw findings appendix when touching `generate_pdf.py` severity
-  ordering/colors.
-- Rewrite working modules wholesale; make surgical changes and run
-  `py -m pytest tests/ -q`.
-
-## Definition of done for any change
-
-Tests pass (currently 9) → run the single-page demo end-to-end
-(`py adk_qa_pipeline\main.py --url …`) → inspect the newest
-`local_findings_adk/adk_run_*.json` → regenerate the PDF if user-facing
-(`py adk_qa_pipeline\generate_pdf.py`) → committed with a message that says why.
+1. **Findings are data.** Build them as `Finding` objects with deterministic IDs; never
+   hand-write HTML for a finding.
+2. **`report.json` and `report.pdf` come from the same `ScanResult`.** Never render a report
+   from anything else.
+3. **A failing stage is reported, not hidden.** Statuses are exactly `ok`, `degraded`,
+   `failed`; the UI shows the engine's own reason text.
+4. **Bound the work.** New stages need a timeout budget in `app/config.py`, and caps on how
+   many elements/fields/rules they touch.
+5. **No new frontend dependencies.** `static/` is plain HTML/CSS/JS with no build step;
+   keep it that way.
+6. **Every user-visible change keeps the four UI states intact** — loading, empty, degraded,
+   error — plus `prefers-reduced-motion` and keyboard operability.
+7. **Tests before claims.** `python -m pytest` for logic, `scripts/verify_e2e.py` for the
+   flow. If you cannot run them, say so rather than asserting it works.
