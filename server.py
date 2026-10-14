@@ -49,6 +49,10 @@ app.add_middleware(
 
 store = JobStore()
 
+_MAX_CONCURRENT_SCANS = int(os.environ.get("SITESENTINEL_MAX_CONCURRENT", "3"))
+_scan_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_SCANS)
+_active_tasks: set[asyncio.Task] = set()
+
 _URL_RE = re.compile(r"^https?://[^\s/$.?#].[^\s]*$", re.IGNORECASE)
 _BLOCKED_HOSTS = {"localhost", "metadata.google.internal"}
 
@@ -86,16 +90,22 @@ def _validate_url(raw: str) -> str:
 
 
 async def _drive(job) -> None:
-    job.status = "running"
-    job.emit({"type": "status", "status": "running", "url": job.url})
     try:
-        result = await run_scan(job.id, job.url, job.run_dir, job.emit)
-        job.result = result.model_dump()
-        job.status = "done"
-        job.emit({"type": "done", "result": job.result})
-    except Exception as exc:  # noqa: BLE001 - surfaced to the UI verbatim
+        async with _scan_semaphore:
+            job.status = "running"
+            job.emit({"type": "status", "status": "running", "url": job.url})
+            try:
+                result = await run_scan(job.id, job.url, job.run_dir, job.emit)
+                job.result = result.model_dump()
+                job.status = "done"
+                job.emit({"type": "done", "result": job.result})
+            except Exception as exc:  # noqa: BLE001 - surfaced to the UI verbatim
+                job.status = "error"
+                job.error = f"{type(exc).__name__}: {exc}"
+                job.emit({"type": "error", "message": job.error})
+    except Exception as exc:  # noqa: BLE001
         job.status = "error"
-        job.error = f"{type(exc).__name__}: {exc}"
+        job.error = f"Queue error: {exc}"
         job.emit({"type": "error", "message": job.error})
 
 
@@ -108,6 +118,7 @@ async def health() -> dict:
         "axe_core": config.AXE_PATH.is_file(),
         "private_targets_allowed": ALLOW_PRIVATE_TARGETS,
         "throttle_seconds": config.THROTTLE_SECONDS,
+        "max_concurrent_scans": _MAX_CONCURRENT_SCANS,
     }
 
 
@@ -115,7 +126,9 @@ async def health() -> dict:
 async def start_scan(payload: dict) -> dict:
     url = _validate_url(str(payload.get("url", "")))
     job = store.create(url)
-    asyncio.create_task(_drive(job))
+    task = asyncio.create_task(_drive(job))
+    _active_tasks.add(task)
+    task.add_done_callback(_active_tasks.discard)
     return {"scan_id": job.id, "url": url, "status": job.status}
 
 

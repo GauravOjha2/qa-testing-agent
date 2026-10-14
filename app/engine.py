@@ -148,7 +148,7 @@ async def run_scan(scan_id: str, url: str, run_dir: Path, emit: Callable[[dict],
             t0 = time.monotonic()
             try:
                 vitals_data, found = await asyncio.wait_for(
-                    vitals.run(browser, url, limiter, log), timeout=config.VITALS_BUDGET + 60
+                    vitals.run(browser, url, limiter, log), timeout=config.VITALS_BUDGET + 30
                 )
                 findings += found
                 status = "ok" if vitals_data.get("source") == "lighthouse-cli" else "degraded"
@@ -189,7 +189,7 @@ async def run_scan(scan_id: str, url: str, run_dir: Path, emit: Callable[[dict],
             thumb = next((config.REPO_ROOT / s.thumb for s in shots if s.viewport == "desktop"), None)
             try:
                 found, geo_analysis = await asyncio.wait_for(
-                    geo_aeo.run(browser, url, limiter, log, thumb), timeout=config.AI_BUDGET + 60
+                    geo_aeo.run(browser, url, limiter, log, thumb), timeout=config.AI_BUDGET + 30
                 )
                 findings += found
                 status = "ok" if geo_analysis.get("llm_status") == "ok" else "degraded"

@@ -184,3 +184,75 @@ def test_model_is_gemini_flash_latest():
 def test_static_assets_exist():
     for name in ("index.html", "app.css", "app.js"):
         assert (Path(config.STATIC_DIR) / name).is_file()
+
+
+# --- URL validation --------------------------------------------------------
+
+def test_validate_url_adds_https_prefix(monkeypatch):
+    import socket
+    from server import _validate_url
+    monkeypatch.setattr(socket, "getaddrinfo", lambda host, port: [(socket.AF_INET, 0, 0, '', ('93.184.215.14', 0))])
+    assert _validate_url("example.com").startswith("https://")
+
+
+def test_validate_url_rejects_empty():
+    from server import _validate_url
+    with pytest.raises(Exception):
+        _validate_url("")
+
+
+def test_validate_url_rejects_private_hosts():
+    from server import _validate_url
+    with pytest.raises(Exception):
+        _validate_url("http://localhost/")
+
+
+def test_validate_url_blocks_metadata():
+    from server import _validate_url
+    with pytest.raises(Exception):
+        _validate_url("http://metadata.google.internal/")
+
+
+def test_validate_url_rejects_private_ip(monkeypatch):
+    import socket
+    from server import _validate_url
+    monkeypatch.setattr(socket, "getaddrinfo", lambda host, port: [(socket.AF_INET, 0, 0, '', ('192.168.1.1', 0))])
+    with pytest.raises(Exception):
+        _validate_url("http://corp-internal.test")
+
+
+# --- LLM JSON extraction ---------------------------------------------------
+
+def test_extract_json_plain():
+    from app.llm import _extract_json
+    assert _extract_json('{"a": 1}') == {"a": 1}
+
+
+def test_extract_json_fenced():
+    from app.llm import _extract_json
+    assert _extract_json('```json\n{"a": 1}\n```') == {"a": 1}
+
+
+def test_extract_json_with_preamble():
+    from app.llm import _extract_json
+    assert _extract_json('Here is the result:\n{"a": 1}') == {"a": 1}
+
+
+# --- report determinism -----------------------------------------------------
+
+def test_report_html_is_deterministic():
+    r = _sample_result()
+    html1 = report.build_html(r)
+    html2 = report.build_html(r)
+    assert html1 == html2
+
+
+# --- config -----------------------------------------------------------------
+
+def test_severity_order_matches_model_literal():
+    """Verify config.SEVERITY_ORDER matches the Severity literal."""
+    import typing
+    from app.models import Severity
+    args = typing.get_args(Severity)
+    assert list(args) == config.SEVERITY_ORDER
+

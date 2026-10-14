@@ -64,8 +64,15 @@ CWV_THRESHOLDS = {
 SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"]
 
 
+_env_loaded = False
+
+
 def load_env() -> None:
-    """Populate os.environ from a local .env file (no extra dependency)."""
+    """Populate os.environ from a local .env file (no extra dependency). Called once."""
+    global _env_loaded
+    if _env_loaded:
+        return
+    _env_loaded = True
     env_path = REPO_ROOT / ".env"
     if not env_path.is_file():
         return
