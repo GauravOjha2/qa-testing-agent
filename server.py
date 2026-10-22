@@ -62,6 +62,28 @@ app.add_middleware(
     max_age=86400,
 )
 
+# --- DebugBundle: production error capture (optional; no-op without a token) ----
+# When DEBUGBUNDLE_PROJECT_TOKEN is set, uncaught exceptions, 5xx request
+# context and error-level logs are packaged as agent-readable debug bundles.
+# Without the token (or if the SDK is missing) the app runs exactly as before.
+_debugbundle = None
+_debugbundle_token = os.environ.get("DEBUGBUNDLE_PROJECT_TOKEN", "").strip()
+if _debugbundle_token:
+    try:
+        import debugbundle as _debugbundle_mod
+
+        _debugbundle_mod.init(
+            project_token=_debugbundle_token,
+            environment=os.environ.get("DEBUGBUNDLE_ENVIRONMENT", "production"),
+            service="sitesentinel",
+        )
+        _debugbundle_mod.capture_exceptions()      # process-level uncaught errors
+        _debugbundle_mod.instrument_fastapi(app)   # ASGI middleware + error logging
+        _debugbundle = _debugbundle_mod
+        print("[debugbundle] error capture enabled")
+    except Exception as exc:  # observability must never break the scanner
+        print(f"[debugbundle] disabled — SDK init failed ({exc})")
+
 store = JobStore()
 
 _MAX_CONCURRENT_SCANS = int(os.environ.get("SITESENTINEL_MAX_CONCURRENT", "3"))
@@ -118,6 +140,12 @@ async def _drive(job) -> None:
                 job.status = "error"
                 job.error = f"{type(exc).__name__}: {exc}"
                 job.emit({"type": "error", "message": job.error})
+                if _debugbundle is not None:
+                    # Handled here, so the global hooks never see it — capture it
+                    # explicitly with the scan context attached.
+                    _debugbundle.capture_exception(
+                        exc, context={"scan_id": job.id, "url": job.url}
+                    )
     except Exception as exc:  # noqa: BLE001
         job.status = "error"
         job.error = f"Queue error: {exc}"

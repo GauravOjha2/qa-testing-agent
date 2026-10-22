@@ -6,8 +6,10 @@ Centralizing this means the rate-limit and console/network-monitor logic
 
 from __future__ import annotations
 
+import os
 import time
 from contextlib import contextmanager
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Any, Iterator
 
@@ -159,3 +161,29 @@ def screenshot_at_breakpoints(browser: Browser, url: str, out_dir: str, shard_ke
         ctx.close()
 
     return paths
+
+def chromium_path() -> "str | None":
+    """Locate the Chromium binary Playwright installed, so external CLIs
+    (e.g. Lighthouse) can drive it. Handles the Linux container layout and
+    the Windows/macOS dev layouts."""
+    roots: list[Path] = []
+    if os.environ.get("PLAYWRIGHT_BROWSERS_PATH"):
+        roots.append(Path(os.environ["PLAYWRIGHT_BROWSERS_PATH"]))
+    roots += [
+        Path.home() / "AppData/Local/ms-playwright",
+        Path.home() / ".cache/ms-playwright",
+        Path.home() / "Library/Caches/ms-playwright",
+    ]
+    patterns = (
+        "chromium-*/chrome-linux/chrome",
+        "chromium-*/chrome-win/chrome.exe",
+        "chromium-*/chrome-mac/Chromium.app/Contents/MacOS/Chromium",
+    )
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for pattern in patterns:
+            for candidate in sorted(root.glob(pattern), reverse=True):
+                if candidate.is_file():
+                    return str(candidate)
+    return None

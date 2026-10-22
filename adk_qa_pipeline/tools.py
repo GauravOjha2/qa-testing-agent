@@ -35,6 +35,7 @@ for _p in (str(_REPO_ROOT / "src"), str(_REPO_ROOT)):
 from xoxoday_qa.config import RUN, SAFETY  # noqa: E402
 from xoxoday_qa.crawler import check_robots_allowed  # noqa: E402
 from xoxoday_qa.playwright_utils import (  # noqa: E402
+    chromium_path,
     PageMonitor,
     browser_session,
     goto_and_settle,
@@ -291,6 +292,21 @@ def _run_axe_core_audit_sync(url: str) -> dict[str, Any]:
         })
 
 
+def _lighthouse_command() -> list[str] | None:
+    """Locate the Lighthouse CLI. The container image installs lighthouse@12
+    globally, so prefer that binary; npx (which re-resolves the package from
+    the npm registry on every cold start) is the last resort."""
+    exe = shutil.which("lighthouse")
+    if exe:
+        return [exe]
+    npx = shutil.which("npx") or shutil.which("npx.cmd")
+    if not npx:
+        progfiles = Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "npx.cmd"
+        if progfiles.exists():
+            npx = str(progfiles)
+    return [npx, "--yes", "lighthouse"] if npx else None
+
+
 def _run_lighthouse_audit_sync(url: str) -> dict[str, Any]:
     """Measure Core Web Vitals (LCP / CLS / INP) and accessibility score for
     `url` by shelling out to the Lighthouse CLI.
@@ -309,17 +325,13 @@ def _run_lighthouse_audit_sync(url: str) -> dict[str, Any]:
     if blocked:
         return {**blocked, "tool": "run_lighthouse_audit", "url": url}
 
-    npx = shutil.which("npx") or shutil.which("npx.cmd")
-    if not npx:
-        progfiles = Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "npx.cmd"
-        if progfiles.exists():
-            npx = str(progfiles)
-    if not npx:
+    cmd = _lighthouse_command()
+    if not cmd:
         return _record("run_lighthouse_audit", {
             "status": "error",
             "tool": "run_lighthouse_audit",
             "url": url,
-            "error": "npx was not found on PATH; Lighthouse unavailable.",
+            "error": "Lighthouse CLI unavailable: no 'lighthouse' binary or npx found on PATH.",
             "findings": [],
         })
 
@@ -329,20 +341,26 @@ def _run_lighthouse_audit_sync(url: str) -> dict[str, Any]:
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
         out_path = tmp.name
 
-    chrome_flags = "--headless --no-sandbox --disable-dev-shm-usage --disable-gpu"
+    chrome_flags = "--headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu"
+    chrome = chromium_path()
+    env = dict(os.environ)
+    if chrome:
+        # The container has no system Chrome; point Lighthouse's
+        # chrome-launcher at the Chromium Playwright installed.
+        env["CHROME_PATH"] = chrome
     report = None
     last_exc: Exception | None = None
     for attempt in (1, 2):
         try:
             subprocess.run(
                 [
-                    npx, "--yes", "lighthouse", url,
+                    *cmd, url,
                     "--output=json", f"--output-path={out_path}",
                     f"--chrome-flags={chrome_flags}",
                     "--only-categories=performance,accessibility",
                     "--quiet",
                 ],
-                check=True, timeout=240, capture_output=True, text=True,
+                check=True, timeout=240, capture_output=True, text=True, env=env,
             )
         except Exception as exc:
             last_exc = exc
@@ -360,9 +378,12 @@ def _run_lighthouse_audit_sync(url: str) -> dict[str, Any]:
         last_exc = exc
         report = None
     if report is None:
-        detail = f"{type(last_exc).__name__}: {last_exc}" if last_exc else "no report produced"
         if last_exc is not None and getattr(last_exc, "stderr", None):
-            detail += " | stderr: " + str(last_exc.stderr)[-300:]
+            detail = "Lighthouse CLI exited without a report | stderr: " + str(last_exc.stderr)[-300:]
+        elif last_exc is not None:
+            detail = f"Lighthouse CLI exited without a report ({type(last_exc).__name__})"
+        else:
+            detail = "Lighthouse CLI produced no report"
         return _record("run_lighthouse_audit", {
             "status": "error",
             "tool": "run_lighthouse_audit",

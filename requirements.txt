@@ -12,3 +12,6 @@ pytest-asyncio>=0.24.0
 # Agent-graph engine (SITESENTINEL_ENGINE=adk). The server falls back to the
 # deterministic core engine with a loud warning if this is missing.
 google-adk>=1.0.0
+# Production error capture -> agent-readable debug bundles (DebugBundle).
+# Inert unless DEBUGBUNDLE_PROJECT_TOKEN is set; see server.py.
+debugbundle-python>=2.0.1

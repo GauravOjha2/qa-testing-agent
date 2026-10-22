@@ -26,6 +26,7 @@ gcloud run deploy sitesentinel \
   --allow-unauthenticated \
   --memory 2Gi --cpu 2 \
   --timeout 900 --concurrency 4 \
+  --max-instances 1 --session-affinity \
   --set-env-vars GEMINI_API_KEY=your-key,SITESENTINEL_ALLOWED_ORIGINS=https://your-ui.vercel.app
 ```
 
@@ -37,9 +38,13 @@ Notes:
 * **SSE + Cloud Run**: streaming responses work, but the progress connection is held open
   for the whole scan, so keep `--timeout` above your slowest scan. If you front the service
   with a load balancer, make sure response buffering is off for `/api/scan/*/events`.
-* Jobs live in process memory. With more than one instance, a client polling
-  `GET /api/scan/{id}` may land on a different instance than the one running the scan —
-  set `--max-instances 1`, or back `JobStore` with Redis/Firestore (see
+* Jobs and artifacts (screenshots, report.json/pdf) live in process memory and the
+  container's ephemeral disk. With more than one instance, any request after the live
+  stream ends — image fetches, report downloads — can land on a different instance and
+  404 ("Couldn't download - No file", broken captures). Hence `--max-instances 1`
+  & `--session-affinity` above. Add `--min-instances 1` if artifacts must survive
+  idle scale-to-zero overnight (bills ~24/7 for one instance). Long-term, move artifacts
+  to a GCS bucket or back `JobStore` with Redis/Firestore (see
   [Architecture](Architecture.md#concurrency-and-isolation)).
 
 Sanity check:
@@ -85,6 +90,8 @@ gcloud run services update sitesentinel --region $REGION \
 | Cloud Run | `GEMINI_API_KEY` | yes, for AI stages | drives every AI layer (`gemini-flash-latest`) |
 | Cloud Run | `SITESENTINEL_ALLOWED_ORIGINS` | recommended | comma-separated CORS allow-list; defaults to `*` |
 | Cloud Run | `SITESENTINEL_ALLOW_PRIVATE_TARGETS` | never in prod | dev/CI only; allows loopback/private targets |
+| Cloud Run | `DEBUGBUNDLE_PROJECT_TOKEN` | optional | enables DebugBundle error capture (agent-readable incident bundles); unset = capture off |
+| Cloud Run | `DEBUGBUNDLE_ENVIRONMENT` | optional | DebugBundle environment label; defaults to `production` |
 | Cloud Run | `PORT` | auto | set by Cloud Run |
 
 Never commit `GEMINI_API_KEY`. Locally it can live in `.env` (gitignored); in the cloud use
