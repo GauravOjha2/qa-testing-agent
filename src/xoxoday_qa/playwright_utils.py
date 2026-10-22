@@ -175,7 +175,11 @@ def chromium_path() -> "str | None":
         Path.home() / "Library/Caches/ms-playwright",
     ]
     patterns = (
+        # Playwright >= ~1.55 downloads "Chrome for Testing" (chrome-linux64);
+        # older revisions used chrome-linux. Match both, plus headless shell.
+        "chromium-*/chrome-linux64/chrome",
         "chromium-*/chrome-linux/chrome",
+        "chromium_headless_shell-*/chrome-linux64/headless_shell",
         "chromium-*/chrome-win/chrome.exe",
         "chromium-*/chrome-mac/Chromium.app/Contents/MacOS/Chromium",
     )

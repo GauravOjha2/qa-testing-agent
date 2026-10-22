@@ -106,3 +106,19 @@ UI. API verified against the installed SDK (`debugbundle-python` 2.0.1).
   env-var table.
   **Why:** the token is a secret config value; it belongs in deploy docs next
   to `GEMINI_API_KEY`, never in the repo.
+
+---
+
+## 2026-10-22 — chromium_path() missed the Chrome-for-Testing layout
+
+**Caught by:** reading the Cloud Build log, which showed Playwright 1.64
+downloads "Chrome for Testing 156.x" to `/ms-playwright/chromium-1248`.
+
+### Change 7 — `src/xoxoday_qa/playwright_utils.py`
+- Added glob patterns `chromium-*/chrome-linux64/chrome` and
+  `chromium_headless_shell-*/chrome-linux64/headless_shell` to
+  `chromium_path()`, keeping the legacy `chrome-linux` pattern.
+  **Why:** newer Playwright packages Chromium as Chrome for Testing under
+  `chrome-linux64/`, not `chrome-linux/`. Without this, the helper would
+  silently return None in the container and the Lighthouse fix (Change 1)
+  would have been a no-op. Found before deploying, so only one extra rebuild.
